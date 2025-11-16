@@ -173,9 +173,9 @@ export default function InsightsPage() {
 
           <div className="grid md:grid-cols-4 gap-12 mt-16">
             {[
-              { value: "₹500M+", label: "Capital Raised" },
-              { value: "150+", label: "Clients Served" },
-              { value: "98%", label: "Success Rate" },
+              { value: "₹5000M+", label: "Capital Raised" },
+           
+              { value: "100 Years", label: "Team Combine Experience" },
               { value: "25%", label: "Avg Cost Reduction" },
             ].map((s, i) => (
               <div key={i} className="text-center">

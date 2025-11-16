@@ -54,7 +54,7 @@ export default function ContactPage() {
             <h1 className="text-6xl lg:text-8xl tracking-tight mb-8 leading-[0.9]">
               Ready to Elevate
               <br />
-              <span className="text-[#8A8A8A]">Your Business</span>
+              <span style={{color:"#520052"}}>Your Business</span>
             </h1>
 
             <p className="text-2xl text-[#8A8A8A] leading-relaxed">

@@ -70,7 +70,7 @@ export default function ServicesPage() {
             <h1 className="text-6xl lg:text-8xl tracking-tight mb-8 leading-[0.9]">
               Comprehensive
               <br />
-              <span className="text-[#8A8A8A]">Financial</span>
+              <span style={{color:"#520052"}}>Financial</span>
               <br />
               Solutions
             </h1>
@@ -109,7 +109,7 @@ export default function ServicesPage() {
             >
               <FloatingCard>
                 <TrendingUp size={48} className="mb-6" />
-                <h2 className="text-4xl lg:text-5xl tracking-tight mb-6">
+                <h2 className="text-4xl lg:text-5xl tracking-tight mb-6" style={{color:"#520052"}}>
                   Strategic Financial Leadership
                 </h2>
                 <p className="text-xl text-[#8A8A8A] mb-8 leading-relaxed">
@@ -140,33 +140,29 @@ export default function ServicesPage() {
       <section className="py-24 bg-[#F2F2F2]">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
           <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="text-5xl mb-20">
-            Our <span className="text-[#8A8A8A]">Services</span>
+            Our <span style={{color:"#520052"}}>Services</span>
           </motion.h2>
 
-          <div className="space-y-12">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service, index) => (
               <motion.div
                 key={service.title}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -80 : 80 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.8 }}
-                style={{
-                  marginLeft: index % 2 === 0 ? '0' : 'auto',
-                  maxWidth: index % 3 === 0 ? '900px' : '800px',
-                }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
               >
-                <FloatingCard className="group cursor-pointer">
-                  <div className="flex flex-col md:flex-row items-start gap-8">
-                    <div className="bg-black text-white p-6 group-hover:scale-110 transition-transform">
-                      <service.icon size={32} />
+                <FloatingCard className="group cursor-pointer h-full flex flex-col">
+                  <div className="flex flex-col gap-6 h-full">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#C96AE0] via-[#520052] to-[#1A001A] flex items-center justify-center text-white shadow-[0_10px_30px_rgba(0,0,0,0.4)] group-hover:scale-110 transition-transform">
+                      <service.icon size={28} />
                     </div>
 
-                    <div className="flex-1">
-                      <h3 className="text-3xl lg:text-4xl mb-4">{service.title}</h3>
-                      <p className="text-xl text-[#8A8A8A] mb-6">{service.description}</p>
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="text-2xl lg:text-3xl mb-3 tracking-tight" style={{color:"#520052"}}>{service.title}</h3>
+                      <p className="text-lg text-[#8A8A8A] mb-4 leading-relaxed">{service.description}</p>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-3 mt-auto">
                         {service.features.map((feature) => (
                           <div key={feature} className="flex items-center gap-2 text-[#8A8A8A]">
                             <span className="w-2 h-2 bg-black rounded-full" />
@@ -191,7 +187,7 @@ export default function ServicesPage() {
           transition={{ duration: 0.8 }}
         >
           <h2 className="text-5xl lg:text-7xl mb-8">
-            Let's Discuss Your <span className="text-[#8A8A8A]">Financial Needs</span>
+            Let's Discuss Your <span style={{color:"#520052"}}>Financial Needs</span>
           </h2>
           <p className="text-xl text-[#8A8A8A] mb-12 max-w-2xl mx-auto">
             Schedule a consultation to explore how our services can accelerate your business growth.

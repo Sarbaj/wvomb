@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { color, motion } from "motion/react";
 import { ArrowRight, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FloatingCard } from "../components/FloatingCard";
@@ -57,7 +57,7 @@ export default function HomePage() {
               >
                 Elevating Your
                 <br />
-                <span className="text-[#8A8A8A]">Business</span>
+                <span style={{color:"#520052"}}>Business</span>
                 <br />
                 Performance
               </motion.h1>
@@ -120,37 +120,33 @@ export default function HomePage() {
             className="mb-20"
           >
             <h2 className="text-5xl lg:text-7xl tracking-tight mb-6">
-              Our <span className="text-[#8A8A8A]">Expertise</span>
+              Our <span style={{color:"#520052"}}>Expertise</span>
             </h2>
             <p className="text-xl text-[#8A8A8A] max-w-2xl">
               Comprehensive financial and operational solutions designed for modern businesses.
             </p>
           </motion.div>
 
-          <div className="space-y-8">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service, index) => (
               <motion.div
-                key={service.title}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -60 : 60 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                key={service.title} 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
-                style={{
-                  marginLeft: index % 2 === 0 ? "0" : "auto",
-                  maxWidth: index === 1 ? "900px" : "800px",
-                }}
               >
-                <FloatingCard className="group cursor-pointer">
-                  <div className="flex items-start gap-8">
-                    <div className="bg-black text-white p-6 group-hover:scale-110 transition-transform duration-300">
-                      {service.icon && <service.icon size={32} />}
+                <FloatingCard className="group cursor-pointer h-full flex flex-col">
+                  <div className="flex flex-col gap-6 h-full">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#C96AE0] via-[#520052] to-[#1A001A] flex items-center justify-center text-white shadow-[0_10px_30px_rgba(0,0,0,0.4)] group-hover:scale-110 transition-transform duration-300">
+                      {service.icon && <service.icon size={28} />}
                     </div>
 
-                    <div className="flex-1">
-                      <h3 className="text-3xl lg:text-4xl mb-4 tracking-tight">
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="text-2xl lg:text-3xl mb-3 tracking-tight" style={{color:"#520052"}}>
                         {service.title}
                       </h3>
-                      <p className="text-xl text-[#8A8A8A] leading-relaxed">
+                      <p className="text-lg text-[#8A8A8A] leading-relaxed">
                         {service.description}
                       </p>
                     </div>
@@ -167,9 +163,10 @@ export default function HomePage() {
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
           <div className="grid md:grid-cols-3 gap-12 lg:gap-20">
             {[
-              { value: "150+", label: "Clients Served" },
-              { value: "₹500M+", label: "Capital Raised" },
-              { value: "98%", label: "Client Retention" },
+              
+              { value: "₹5000M+", label: "Capital Raised" },
+                  { value: "100 Years", label: "Team Combine Experience" },
+                 { value: "25%", label: "Avg Cost Reduction" },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}

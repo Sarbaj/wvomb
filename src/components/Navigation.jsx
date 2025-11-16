@@ -23,7 +23,7 @@ export default function Navigation() {
     >
       <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-6 flex items-center justify-between">
         <Link to="/" className="text-2xl tracking-tight">
-          WvOMB<span className="text-[#8A8A8A]">.</span>
+          WVOMB<span className="text-[#8A8A8A]">.</span>
         </Link>
 
         {/* Desktop Navigation */}
