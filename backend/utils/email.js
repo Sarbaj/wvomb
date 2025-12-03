@@ -1,53 +1,37 @@
-import nodemailer from 'nodemailer';
+import * as brevo from '@getbrevo/brevo';
 
-// Create email transporter
-const createTransporter = () => {
-  const port = parseInt(process.env.SMTP_PORT || '587');
-  
-  const config = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: port,
-    secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    },
-    tls: {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000
-  };
-
-  console.log('Email config:', {
-    host: config.host,
-    port: config.port,
-    secure: config.secure,
-    user: config.auth.user,
-    passLength: config.auth.pass?.length
-  });
-
-  return nodemailer.createTransport(config);
+// Initialize Brevo API client
+const getBrevoClient = () => {
+  const apiInstance = new brevo.TransactionalEmailsApi();
+  const apiKey = apiInstance.authentications['apiKey'];
+  apiKey.apiKey = process.env.BREVO_API_KEY;
+  return apiInstance;
 };
 
-// Send email function
+// Send email function using Brevo API
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    const transporter = createTransporter();
+    if (!process.env.BREVO_API_KEY) {
+      console.log('⚠️ BREVO_API_KEY not configured - email not sent');
+      return null;
+    }
 
-    const mailOptions = {
-      from: `"WVOMB Contact Form" <${process.env.SMTP_USER}>`,
-      to: to,
-      subject: subject,
-      html: html
+    const apiInstance = getBrevoClient();
+    
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = {
+      name: 'WVOMB Advisors',
+      email: process.env.ADMIN_EMAIL || 'sarbajmalek3456@gmail.com'
     };
+    sendSmtpEmail.to = [{ email: to }];
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = html;
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
-    return info;
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('✅ Email sent via Brevo API:', result.response.body.messageId);
+    return result;
   } catch (error) {
-    console.error('Email error:', error);
+    console.error('❌ Brevo API error:', error.message);
     throw error;
   }
 };
@@ -323,22 +307,29 @@ const generateAutoReplyTemplate = (userName) => {
   `;
 };
 
-// Send auto-reply to user
+// Send auto-reply to user using Brevo API
 export const sendAutoReply = async (userEmail, userName) => {
   try {
-    const transporter = createTransporter();
+    if (!process.env.BREVO_API_KEY) {
+      console.log('⚠️ BREVO_API_KEY not configured - auto-reply not sent');
+      return null;
+    }
 
-    const mailOptions = {
-      from: `"WVOMB Advisors" <${process.env.SMTP_USER}>`,
-      to: userEmail,
-      subject: 'Thank you for contacting WVOMB Advisors ✓',
-      html: generateAutoReplyTemplate(userName)
+    const apiInstance = getBrevoClient();
+    
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = {
+      name: 'WVOMB Advisors',
+      email: process.env.ADMIN_EMAIL || 'sarbajmalek3456@gmail.com'
     };
+    sendSmtpEmail.to = [{ email: userEmail }];
+    sendSmtpEmail.subject = 'Thank you for contacting WVOMB Advisors ✓';
+    sendSmtpEmail.htmlContent = generateAutoReplyTemplate(userName);
 
-    await transporter.sendMail(mailOptions);
-    console.log('Auto-reply sent to:', userEmail);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('✅ Auto-reply sent to:', userEmail);
   } catch (error) {
-    console.error('Auto-reply error:', error);
+    console.error('❌ Auto-reply error:', error.message);
     // Don't throw - auto-reply failure shouldn't stop the process
   }
 };
