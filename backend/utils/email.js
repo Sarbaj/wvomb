@@ -28,7 +28,8 @@ export const sendEmail = async ({ to, subject, html }) => {
     sendSmtpEmail.htmlContent = html;
 
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Email sent via Brevo API:', result.response.body.messageId);
+    const messageId = result?.response?.body?.messageId || result?.messageId || 'unknown';
+    console.log('✅ Email sent via Brevo API:', messageId);
     return result;
   } catch (error) {
     console.error('❌ Brevo API error:', error.message);
@@ -326,8 +327,9 @@ export const sendAutoReply = async (userEmail, userName) => {
     sendSmtpEmail.subject = 'Thank you for contacting WVOMB Advisors ✓';
     sendSmtpEmail.htmlContent = generateAutoReplyTemplate(userName);
 
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Auto-reply sent to:', userEmail);
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    const messageId = result?.response?.body?.messageId || result?.messageId || 'unknown';
+    console.log('✅ Auto-reply sent to:', userEmail, '- Message ID:', messageId);
   } catch (error) {
     console.error('❌ Auto-reply error:', error.message);
     // Don't throw - auto-reply failure shouldn't stop the process
