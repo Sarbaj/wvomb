@@ -36,25 +36,31 @@ router.post('/', async (req, res) => {
 
     await newMessage.save();
 
-    // Send email notification to admin
-    try {
-      const serviceName = getServiceName(service);
-      
-      await sendEmail({
-        to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
-        subject: `🔔 New Contact Form Submission from ${name}`,
-        html: generateEmailTemplate(name, email, company, serviceName, message)
-      });
+    // Send email notification to admin (only if SMTP is configured)
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      try {
+        const serviceName = getServiceName(service);
+        
+        await sendEmail({
+          to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
+          subject: `🔔 New Contact Form Submission from ${name}`,
+          html: generateEmailTemplate(name, email, company, serviceName, message)
+        });
 
-      // Send auto-reply to user
-      await sendAutoReply(email, name);
+        // Send auto-reply to user
+        await sendAutoReply(email, name);
 
-      // Mark email as sent
-      newMessage.emailSent = true;
-      await newMessage.save();
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Continue even if email fails - message is still saved
+        // Mark email as sent
+        newMessage.emailSent = true;
+        await newMessage.save();
+        
+        console.log('✅ Emails sent successfully');
+      } catch (emailError) {
+        console.error('⚠️ Email sending failed (message saved to database):', emailError.message);
+        // Continue even if email fails - message is still saved
+      }
+    } else {
+      console.log('ℹ️ Email not configured - message saved to database only');
     }
 
     res.status(201).json({ 
