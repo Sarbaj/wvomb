@@ -48,6 +48,7 @@ export default function ContactPage() {
     e.preventDefault();
     setSubmitting(true);
     setSubmitError('');
+    setSubmitSuccess(false);
 
     try {
       const response = await fetch(`${API_URL}/api/messages`, {
@@ -175,15 +176,102 @@ export default function ContactPage() {
                 <h2 className="text-3xl lg:text-4xl tracking-tight mb-8">Send us a message</h2>
 
                 {submitSuccess && (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded">
-                    <p className="text-green-800">✓ Message sent successfully! We'll get back to you soon.</p>
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="mb-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg shadow-lg relative overflow-hidden"
+                  >
+                    {/* Animated background effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-emerald-400/10"
+                      animate={{
+                        x: ['-100%', '100%'],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    />
+                    
+                    <div className="relative flex items-start gap-4">
+                      {/* Animated checkmark icon */}
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                        className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg"
+                      >
+                        <motion.svg
+                          className="w-7 h-7 text-white"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="3"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ delay: 0.3, duration: 0.5 }}
+                        >
+                          <path d="M5 13l4 4L19 7" />
+                        </motion.svg>
+                      </motion.div>
+                      
+                      <div className="flex-1">
+                        <motion.h3
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="text-xl font-semibold text-green-800 mb-1"
+                        >
+                          Message Sent Successfully!
+                        </motion.h3>
+                        <motion.p
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 }}
+                          className="text-green-700 text-sm leading-relaxed"
+                        >
+                          Thank you for reaching out! We've received your message and will get back to you within 24 hours.
+                        </motion.p>
+                      </div>
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <motion.div
+                      className="absolute bottom-0 left-0 h-1 bg-green-500"
+                      initial={{ width: "100%" }}
+                      animate={{ width: "0%" }}
+                      transition={{ duration: 5, ease: "linear" }}
+                    />
+                  </motion.div>
                 )}
 
                 {submitError && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded">
-                    <p className="text-red-800">{submitError}</p>
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.4 }}
+                    className="mb-6 p-5 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-400 rounded-lg shadow-lg"
+                  >
+                    <div className="flex items-start gap-3">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.2, type: "spring" }}
+                        className="flex-shrink-0 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center"
+                      >
+                        <span className="text-white text-xl font-bold">!</span>
+                      </motion.div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-red-800 mb-1">Error Sending Message</h3>
+                        <p className="text-red-700 text-sm">{submitError}</p>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">

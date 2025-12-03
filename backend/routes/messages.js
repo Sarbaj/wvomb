@@ -1,7 +1,7 @@
 import express from 'express';
 import Message from '../models/Message.js';
 import { authenticateAdmin } from '../middleware/auth.js';
-import { sendEmail } from '../utils/email.js';
+import { sendEmail, sendAutoReply, generateEmailTemplate } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -36,36 +36,18 @@ router.post('/', async (req, res) => {
 
     await newMessage.save();
 
-    // Send email notification
+    // Send email notification to admin
     try {
       const serviceName = getServiceName(service);
       
       await sendEmail({
         to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
-        subject: `New Contact Form Submission from ${name}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h2 style="color: #520052; margin-top: 0;">New Contact Form Submission</h2>
-              
-              <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-left: 4px solid #520052;">
-                <p style="margin: 8px 0;"><strong>Name:</strong> ${name}</p>
-                <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #520052;">${email}</a></p>
-                <p style="margin: 8px 0;"><strong>Company:</strong> ${company || 'Not provided'}</p>
-                <p style="margin: 8px 0;"><strong>Service Interest:</strong> <span style="color: #520052; font-weight: bold;">${serviceName}</span></p>
-              </div>
-              
-              <div style="margin: 20px 0;">
-                <p style="margin: 8px 0;"><strong>Message:</strong></p>
-                <div style="padding: 15px; background-color: #f5f5f5; border-radius: 4px; white-space: pre-wrap;">${message}</div>
-              </div>
-              
-              <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
-              <p style="font-size: 12px; color: #888; margin: 0;">Submitted at: ${new Date().toLocaleString()}</p>
-            </div>
-          </div>
-        `
+        subject: `🔔 New Contact Form Submission from ${name}`,
+        html: generateEmailTemplate(name, email, company, serviceName, message)
       });
+
+      // Send auto-reply to user
+      await sendAutoReply(email, name);
 
       // Mark email as sent
       newMessage.emailSent = true;
