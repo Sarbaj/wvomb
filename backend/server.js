@@ -18,9 +18,9 @@ connectDB();
 // Middleware
 const corsOptions = {
   origin: [
-    'http://localhost:5173',           // Local development
-    'https://wvomb.vercel.app/',        // Production Vercel
-    'http://localhost:5174'       // Vercel preview deployments
+    'http://localhost:5173',        // Local development
+    'http://localhost:5174',        // Local development (alternate port)
+    'https://wvomb.vercel.app'      // Production only
   ],
   credentials: true,
   optionsSuccessStatus: 200
