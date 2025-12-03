@@ -2,11 +2,12 @@ import nodemailer from 'nodemailer';
 
 // Create email transporter
 const createTransporter = () => {
-  // Use port 465 with SSL for better compatibility with hosting platforms
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  
   const config = {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: true, // true for 465 (SSL), false for 587 (TLS)
+    port: port,
+    secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
