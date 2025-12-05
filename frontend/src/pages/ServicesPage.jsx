@@ -93,7 +93,7 @@ export default function ServicesPage() {
             transition={{ duration: 1 }}
             className="max-w-4xl"
           >
-            <h1 className="text-6xl lg:text-8xl tracking-tight mb-8 leading-[0.9]">
+            <h1 className="text-5xl sm:text-6xl lg:text-8xl tracking-tight mb-8 leading-[0.9] break-words">
               Comprehensive
               <br />
               <span style={{color:"#520052"}}>Financial</span>
