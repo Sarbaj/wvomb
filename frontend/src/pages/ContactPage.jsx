@@ -147,13 +147,13 @@ export default function ContactPage() {
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-3xl"
           >
-            <h1 className="text-6xl lg:text-8xl tracking-tight mb-8 leading-[0.9]">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl tracking-tight mb-6 md:mb-8 leading-[1.1] md:leading-[0.9]">
               Ready to Elevate
               <br />
               <span style={{color:"#520052"}}>Your Business</span>
             </h1>
 
-            <p className="text-2xl text-[#8A8A8A] leading-relaxed" style={{color:"#520052"}}>
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-[#8A8A8A] leading-relaxed" style={{color:"#520052"}}>
               Elevating your business performance with expert financial guidance and support. Get in
               touch today to discuss how WvOMB ADVISORS can help.
             </p>
@@ -173,7 +173,7 @@ export default function ContactPage() {
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <FloatingCard>
-                <h2 className="text-3xl lg:text-4xl tracking-tight mb-8">Send us a message</h2>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-6 md:mb-8">Send us a message</h2>
 
                 {submitSuccess && (
                   <motion.div
@@ -274,10 +274,10 @@ export default function ContactPage() {
                   </motion.div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
 
                   <div>
-                    <label htmlFor="name" className="block text-sm tracking-wide mb-2 text-[#8A8A8A]">
+                    <label htmlFor="name" className="block text-xs sm:text-sm tracking-wide mb-2 text-[#8A8A8A]">
                       Full Name
                     </label>
                     <input
@@ -285,14 +285,14 @@ export default function ContactPage() {
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-6 py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none text-sm md:text-base"
                       placeholder="John Doe"
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm tracking-wide mb-2 text-[#8A8A8A]">
+                    <label htmlFor="email" className="block text-xs sm:text-sm tracking-wide mb-2 text-[#8A8A8A]">
                       Email Address
                     </label>
                     <input
@@ -300,14 +300,14 @@ export default function ContactPage() {
                       id="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-6 py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none text-sm md:text-base"
                       placeholder="john@company.com"
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="company" className="block text-sm tracking-wide mb-2 text-[#8A8A8A]">
+                    <label htmlFor="company" className="block text-xs sm:text-sm tracking-wide mb-2 text-[#8A8A8A]">
                       Company Name
                     </label>
                     <input
@@ -315,20 +315,20 @@ export default function ContactPage() {
                       id="company"
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className="w-full px-6 py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none text-sm md:text-base"
                       placeholder="Your Company"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="service" className="block text-sm tracking-wide mb-2 text-[#8A8A8A]">
+                    <label htmlFor="service" className="block text-xs sm:text-sm tracking-wide mb-2 text-[#8A8A8A]">
                       Service Interest
                     </label>
                     <select
                       id="service"
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                      className="w-full px-6 py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none text-sm md:text-base"
                       required
                     >
                       <option value="">Select a service</option>
@@ -344,15 +344,15 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm tracking-wide mb-2 text-[#8A8A8A]">
+                    <label htmlFor="message" className="block text-xs sm:text-sm tracking-wide mb-2 text-[#8A8A8A]">
                       Message
                     </label>
                     <textarea
                       id="message"
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      rows="6"
-                      className="w-full px-6 py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none resize-none"
+                      rows="5"
+                      className="w-full px-4 py-3 md:px-6 md:py-4 bg-[#F2F2F2] border-2 border-transparent focus:border-black focus:bg-white transition-all outline-none resize-none text-sm md:text-base"
                       placeholder="Tell us about your needs..."
                       required
                     />
@@ -361,7 +361,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-black text-white px-8 py-5 text-lg hover:bg-[#1a1a1a] transition-colors flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-black text-white px-6 py-4 md:px-8 md:py-5 text-base md:text-lg hover:bg-[#1a1a1a] transition-colors flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? 'Sending...' : 'Send Message'}
                     {!submitting && <Send size={20} className="group-hover:translate-x-1 transition-transform" />}
@@ -375,16 +375,16 @@ export default function ContactPage() {
               initial={{ opacity: 0, x: 60 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="space-y-8"
+              className="space-y-6 md:space-y-8"
             >
               <div>
-                <h3 className="text-3xl lg:text-4xl tracking-tight mb-8">Get in touch</h3>
-                <p className="text-xl text-[#8A8A8A] leading-relaxed mb-12" style={{color:"#520052"}}>
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl tracking-tight mb-4 md:mb-6 lg:mb-8">Get in touch</h3>
+                <p className="text-base sm:text-lg md:text-xl text-[#8A8A8A] leading-relaxed mb-6 md:mb-8 lg:mb-12" style={{color:"#520052"}}>
                   Reach out through any of these channels, and we'll get back to you within 24 hours.
                 </p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {contactInfo.map((item, index) => (
                   <motion.div
                     key={item.label}
@@ -393,21 +393,21 @@ export default function ContactPage() {
                     transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
                   >
                     <FloatingCard className="group hover:bg-[#F2F2F2] transition-colors cursor-pointer">
-                      <div className="flex items-start gap-6">
-                        <div className="bg-black text-white p-4 group-hover:scale-110 transition-transform">
-                          <item.icon size={24} />
+                      <div className="flex items-start gap-4 md:gap-6">
+                        <div className="bg-black text-white p-3 md:p-4 group-hover:scale-110 transition-transform flex-shrink-0">
+                          <item.icon size={20} className="md:w-6 md:h-6" />
                         </div>
-                        <div>
-                          <div className="text-sm tracking-wide text-[#8A8A8A] mb-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm tracking-wide text-[#8A8A8A] mb-1 md:mb-2">
                             {item.label}
                           </div>
 
                           {item.href ? (
-                            <a href={item.href} className="text-xl hover:text-[#8A8A8A] transition-colors">
+                            <a href={item.href} className="text-base sm:text-lg md:text-xl hover:text-[#8A8A8A] transition-colors break-words">
                               {item.value}
                             </a>
                           ) : (
-                            <div className="text-xl">{item.value}</div>
+                            <div className="text-base sm:text-lg md:text-xl break-words">{item.value}</div>
                           )}
                         </div>
                       </div>
@@ -421,12 +421,12 @@ export default function ContactPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, delay: 0.8 }}
-                className="mt-12"
+                className="mt-8 md:mt-12"
               >
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1670225597315-782633cfbd2a"
                   alt="Abstract geometric design"
-                  className="w-full h-[400px] object-cover grayscale"
+                  className="w-full h-[250px] sm:h-[300px] md:h-[400px] object-cover grayscale"
                 />
               </motion.div>
             </motion.div>
@@ -445,23 +445,23 @@ export default function ContactPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h2 className="text-4xl lg:text-5xl tracking-tight mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl tracking-tight mb-4 md:mb-6">
                 Visit Our <span style={{color:"#520052"}}>Office</span>
               </h2>
 
-              <p className="text-xl text-[#8A8A8A] leading-relaxed mb-8" style={{color:"#520052"}}>
+              <p className="text-base sm:text-lg md:text-xl text-[#8A8A8A] leading-relaxed mb-6 md:mb-8" style={{color:"#520052"}}>
                 Located in the heart of Gujarat's business district, our office is designed for
                 collaboration and innovation.
               </p>
 
-              <div className="space-y-4 text-lg">
+              <div className="space-y-3 md:space-y-4 text-base md:text-lg">
                 <div>
-                  <div className="text-[#8A8A8A] mb-1">Address</div>
-                  <div>{contactData.address}</div>
+                  <div className="text-[#8A8A8A] mb-1 text-sm md:text-base">Address</div>
+                  <div className="break-words">{contactData.address}</div>
                 </div>
 
                 <div>
-                  <div className="text-[#8A8A8A] mb-1">Office Hours</div>
+                  <div className="text-[#8A8A8A] mb-1 text-sm md:text-base">Office Hours</div>
                   <div>Monday - Friday: 9:00 AM - 6:00 PM</div>
                  
                 </div>
@@ -477,7 +477,7 @@ export default function ContactPage() {
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1695067438561-75492f7b6a9c"
                 alt="Modern building"
-                className="w-full h-[500px] object-cover grayscale shadow-[0_20px_80px_rgb(0,0,0,0.12)]"
+                className="w-full h-[300px] sm:h-[400px] md:h-[500px] object-cover grayscale shadow-[0_20px_80px_rgb(0,0,0,0.12)]"
               />
             </motion.div>
 
@@ -493,12 +493,12 @@ export default function ContactPage() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-5xl lg:text-6xl tracking-tight mb-20 text-center"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight mb-12 md:mb-16 lg:mb-20 text-center"
           >
             Quick <span className="text-[#8A8A8A]" style={{color:"#520052"}}>Questions</span>
           </motion.h2>
 
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {[
               {
                 q: 'What is your typical engagement model?',
@@ -519,10 +519,10 @@ export default function ContactPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="border-t border-[#333] pt-8"
+                className="border-t border-[#333] pt-6 md:pt-8"
               >
-                <h3 className="text-2xl mb-4">{faq.q}</h3>
-                <p className="text-lg text-[#8A8A8A] leading-relaxed">{faq.a}</p>
+                <h3 className="text-lg sm:text-xl md:text-2xl mb-3 md:mb-4">{faq.q}</h3>
+                <p className="text-base md:text-lg text-[#8A8A8A] leading-relaxed">{faq.a}</p>
               </motion.div>
             ))}
           </div>

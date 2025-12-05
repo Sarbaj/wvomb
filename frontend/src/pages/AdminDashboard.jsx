@@ -1,20 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Edit2, Trash2, LogOut, LayoutDashboard, Package, Mail, Settings, Search, TrendingUp, Users, MessageSquare, Download, Filter, CheckCircle, Clock, Archive } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState('overview');
   const [services, setServices] = useState([]);
   const [contact, setContact] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [messageFilter, setMessageFilter] = useState('all');
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalMessages: 0,
+    newMessages: 0,
+    activeServices: 0,
+    totalServices: 0
+  });
   const navigate = useNavigate();
 
   const token = localStorage.getItem('adminToken');
@@ -39,9 +48,28 @@ export default function AdminDashboard() {
         })
       ]);
 
-      if (servicesRes.ok) setServices(await servicesRes.json());
+      if (servicesRes.ok) {
+        const servicesData = await servicesRes.json();
+        setServices(servicesData);
+        setStats(prev => ({
+          ...prev,
+          totalServices: servicesData.length,
+          activeServices: servicesData.filter(s => s.isActive).length
+        }));
+      }
       if (contactRes.ok) setContact(await contactRes.json());
-      if (messagesRes.ok) setMessages(await messagesRes.json());
+      if (messagesRes.ok) {
+        const messagesData = await messagesRes.json();
+        setMessages(messagesData);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const newCount = messagesData.filter(m => new Date(m.createdAt) >= today).length;
+        setStats(prev => ({
+          ...prev,
+          totalMessages: messagesData.length,
+          newMessages: newCount
+        }));
+      }
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -103,149 +131,476 @@ export default function AdminDashboard() {
     return serviceMap[serviceValue] || serviceValue;
   };
 
+  const exportMessages = () => {
+    const csv = [
+      ['Name', 'Email', 'Company', 'Service', 'Message', 'Date'],
+      ...messages.map(m => [
+        m.name,
+        m.email,
+        m.company || '',
+        getServiceName(m.service),
+        m.message.replace(/\n/g, ' '),
+        new Date(m.createdAt).toLocaleString()
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `messages-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
+  const filteredMessages = messages.filter(message => {
+    const matchesSearch = searchTerm === '' || 
+      message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.message.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const messageDate = new Date(message.createdAt);
+    
+    const matchesFilter = 
+      messageFilter === 'all' ||
+      (messageFilter === 'today' && messageDate >= today) ||
+      (messageFilter === 'week' && messageDate >= new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)) ||
+      (messageFilter === 'month' && messageDate >= new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000));
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  const getMessagesByService = () => {
+    const serviceCount = {};
+    messages.forEach(m => {
+      const service = getServiceName(m.service);
+      serviceCount[service] = (serviceCount[service] || 0) + 1;
+    });
+    return Object.entries(serviceCount).sort((a, b) => b[1] - a[1]);
+  };
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F2F2F2]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#520052] mx-auto mb-4"></div>
+          <p className="text-[#8A8A8A]">Loading dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F2F2] p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-light">Admin Dashboard</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-
-        {/* Services Section */}
-        <div className="bg-white rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-light">Services</h2>
+    <div className="min-h-screen bg-[#F2F2F2]">
+      {/* Header */}
+      <div className="bg-white border-b border-[#E5E5E5] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-light">Admin Dashboard</h1>
+              <p className="text-sm text-[#8A8A8A] mt-1">Manage your services and messages</p>
+            </div>
             <button
-              onClick={() => {
-                setEditingService(null);
-                setShowServiceModal(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded hover:bg-[#333]"
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
             >
-              <Plus size={18} />
-              Add Service
+              <LogOut size={18} />
+              Logout
             </button>
           </div>
+        </div>
+      </div>
 
-          <div className="grid gap-4">
-            {services.map((service) => (
-              <motion.div
-                key={service._id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="border border-[#E5E5E5] rounded p-4 flex justify-between items-start"
-              >
-                <div>
-                  <h3 className="text-xl mb-2">{service.title}</h3>
-                  <p className="text-[#8A8A8A] text-sm">{service.description}</p>
-                  <span className={`inline-block mt-2 px-2 py-1 text-xs rounded ${service.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {service.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setEditingService(service);
-                      setShowServiceModal(true);
-                    }}
-                    className="p-2 hover:bg-[#F2F2F2] rounded"
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  <button
-                    onClick={() => deleteService(service._id)}
-                    className="p-2 hover:bg-red-50 text-red-600 rounded"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        {/* Navigation Tabs */}
+        <div className="bg-white rounded-lg p-2 mb-6 flex gap-2">
+          {[
+            { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+            { id: 'services', label: 'Services', icon: Package },
+            { id: 'messages', label: 'Messages', icon: MessageSquare },
+            { id: 'contact', label: 'Contact', icon: Mail }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded transition-all ${
+                activeTab === tab.id
+                  ? 'bg-[#520052] text-white'
+                  : 'text-[#8A8A8A] hover:bg-[#F2F2F2]'
+              }`}
+            >
+              <tab.icon size={18} />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Messages Section */}
-        <div className="bg-white rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-light">Contact Messages</h2>
-            <span className="px-3 py-1 bg-[#520052] text-white rounded-full text-sm">
-              {messages.length} messages
-            </span>
-          </div>
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-lg p-6 border-l-4 border-[#520052]"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-[#8A8A8A] mb-1">Total Messages</p>
+                    <p className="text-3xl font-light">{stats.totalMessages}</p>
+                  </div>
+                  <MessageSquare className="text-[#520052]" size={32} />
+                </div>
+              </motion.div>
 
-          {messages.length === 0 ? (
-            <p className="text-[#8A8A8A] text-center py-8">No messages yet</p>
-          ) : (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-lg p-6 border-l-4 border-green-500"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-[#8A8A8A] mb-1">New Today</p>
+                    <p className="text-3xl font-light">{stats.newMessages}</p>
+                  </div>
+                  <TrendingUp className="text-green-500" size={32} />
+                </div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-lg p-6 border-l-4 border-blue-500"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-[#8A8A8A] mb-1">Active Services</p>
+                    <p className="text-3xl font-light">{stats.activeServices}</p>
+                  </div>
+                  <Package className="text-blue-500" size={32} />
+                </div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-lg p-6 border-l-4 border-orange-500"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-[#8A8A8A] mb-1">Total Services</p>
+                    <p className="text-3xl font-light">{stats.totalServices}</p>
+                  </div>
+                  <Settings className="text-orange-500" size={32} />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Service Interest Chart */}
+            <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-light mb-6">Messages by Service</h2>
+              <div className="space-y-4">
+                {getMessagesByService().map(([service, count]) => (
+                  <div key={service}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm">{service}</span>
+                      <span className="text-sm font-medium">{count}</span>
+                    </div>
+                    <div className="w-full bg-[#F2F2F2] rounded-full h-2">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(count / stats.totalMessages) * 100}%` }}
+                        transition={{ duration: 0.5 }}
+                        className="bg-gradient-to-r from-[#520052] to-[#8B008B] h-2 rounded-full"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Messages */}
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-light">Recent Messages</h2>
+                <button
+                  onClick={() => setActiveTab('messages')}
+                  className="text-sm text-[#520052] hover:underline"
+                >
+                  View all →
+                </button>
+              </div>
+              <div className="space-y-3">
+                {messages.slice(0, 5).map(message => (
+                  <div
+                    key={message._id}
+                    className="flex items-center justify-between p-3 border border-[#E5E5E5] rounded hover:border-[#520052] transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedMessage(message);
+                      setShowMessageModal(true);
+                    }}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{message.name}</p>
+                      <p className="text-sm text-[#8A8A8A]">{message.email}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-[#520052]">{getServiceName(message.service)}</p>
+                      <p className="text-xs text-[#8A8A8A]">
+                        {new Date(message.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Services Tab */}
+        {activeTab === 'services' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-6"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-light">Services Management</h2>
+                <p className="text-sm text-[#8A8A8A] mt-1">
+                  {stats.activeServices} active of {stats.totalServices} total
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingService(null);
+                  setShowServiceModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors"
+              >
+                <Plus size={18} />
+                Add Service
+              </button>
+            </div>
+
             <div className="grid gap-4">
-              {messages.map((message) => (
+              {services.map((service, index) => (
                 <motion.div
-                  key={message._id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="border border-[#E5E5E5] rounded p-4 hover:border-[#520052] transition-colors cursor-pointer"
-                  onClick={() => {
-                    setSelectedMessage(message);
-                    setShowMessageModal(true);
-                  }}
+                  key={service._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="border border-[#E5E5E5] rounded-lg p-5 hover:shadow-lg transition-all"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-medium">{message.name}</h3>
-                        <span className="text-sm text-[#8A8A8A]">{message.email}</span>
+                        {service.icon && <span className="text-2xl">{service.icon}</span>}
+                        <h3 className="text-xl font-medium">{service.title}</h3>
+                        <span className={`px-3 py-1 text-xs rounded-full ${
+                          service.isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {service.isActive ? '● Active' : '○ Inactive'}
+                        </span>
                       </div>
-                      <p className="text-sm text-[#520052] mb-2">{getServiceName(message.service)}</p>
-                      <p className="text-[#8A8A8A] text-sm line-clamp-2">{message.message}</p>
-                      <p className="text-xs text-[#8A8A8A] mt-2">
-                        {new Date(message.createdAt).toLocaleString()}
+                      <p className="text-[#8A8A8A] text-sm mb-3">{service.description}</p>
+                      <p className="text-xs text-[#8A8A8A]">
+                        Created: {new Date(service.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteMessage(message._id);
-                      }}
-                      className="p-2 hover:bg-red-50 text-red-600 rounded"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingService(service);
+                          setShowServiceModal(true);
+                        }}
+                        className="p-2 hover:bg-[#F2F2F2] rounded transition-colors"
+                        title="Edit service"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() => deleteService(service._id)}
+                        className="p-2 hover:bg-red-50 text-red-600 rounded transition-colors"
+                        title="Delete service"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
             </div>
-          )}
-        </div>
+          </motion.div>
+        )}
 
-        {/* Contact Section */}
-        <div className="bg-white rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-light">Contact Details</h2>
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="px-4 py-2 bg-black text-white rounded hover:bg-[#333]"
-            >
-              Update Contact
-            </button>
-          </div>
-
-          {contact && (
-            <div className="space-y-2 text-sm">
-              <p><strong>Email:</strong> {contact.email}</p>
-              <p><strong>Phone:</strong> {contact.phone}</p>
-              <p><strong>Address:</strong> {contact.address}</p>
+        {/* Messages Tab */}
+        {activeTab === 'messages' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-6"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-light">Contact Messages</h2>
+                <p className="text-sm text-[#8A8A8A] mt-1">
+                  {filteredMessages.length} of {messages.length} messages
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8A8A]" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Search messages..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052]"
+                  />
+                </div>
+                <select
+                  value={messageFilter}
+                  onChange={(e) => setMessageFilter(e.target.value)}
+                  className="px-4 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052]"
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+                <button
+                  onClick={exportMessages}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors"
+                >
+                  <Download size={18} />
+                  Export CSV
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+
+            {filteredMessages.length === 0 ? (
+              <div className="text-center py-12">
+                <MessageSquare className="mx-auto text-[#E5E5E5] mb-4" size={48} />
+                <p className="text-[#8A8A8A]">No messages found</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                <AnimatePresence>
+                  {filteredMessages.map((message, index) => (
+                    <motion.div
+                      key={message._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="border border-[#E5E5E5] rounded-lg p-5 hover:shadow-lg hover:border-[#520052] transition-all cursor-pointer"
+                      onClick={() => {
+                        setSelectedMessage(message);
+                        setShowMessageModal(true);
+                      }}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-medium">{message.name}</h3>
+                            <span className="text-sm text-[#8A8A8A]">{message.email}</span>
+                            {message.emailSent && (
+                              <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                                <CheckCircle size={12} />
+                                Sent
+                              </span>
+                            )}
+                          </div>
+                          {message.company && (
+                            <p className="text-sm text-[#8A8A8A] mb-2">Company: {message.company}</p>
+                          )}
+                          <p className="text-sm text-[#520052] font-medium mb-2">
+                            {getServiceName(message.service)}
+                          </p>
+                          <p className="text-[#8A8A8A] text-sm line-clamp-2 mb-2">{message.message}</p>
+                          <div className="flex items-center gap-2 text-xs text-[#8A8A8A]">
+                            <Clock size={12} />
+                            {new Date(message.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteMessage(message._id);
+                          }}
+                          className="p-2 hover:bg-red-50 text-red-600 rounded transition-colors"
+                          title="Delete message"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Contact Tab */}
+        {activeTab === 'contact' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-6"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-light">Contact Information</h2>
+                <p className="text-sm text-[#8A8A8A] mt-1">Manage your business contact details</p>
+              </div>
+              <button
+                onClick={() => setShowContactModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors"
+              >
+                <Edit2 size={18} />
+                Update Contact
+              </button>
+            </div>
+
+            {contact && (
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="border border-[#E5E5E5] rounded-lg p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Mail className="text-[#520052]" size={24} />
+                    <h3 className="text-lg font-medium">Email</h3>
+                  </div>
+                  <a href={`mailto:${contact.email}`} className="text-[#520052] hover:underline">
+                    {contact.email}
+                  </a>
+                </div>
+
+                <div className="border border-[#E5E5E5] rounded-lg p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Users className="text-[#520052]" size={24} />
+                    <h3 className="text-lg font-medium">Phone</h3>
+                  </div>
+                  <a href={`tel:${contact.phone}`} className="text-[#520052] hover:underline">
+                    {contact.phone}
+                  </a>
+                </div>
+
+                <div className="border border-[#E5E5E5] rounded-lg p-5 md:col-span-2">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Settings className="text-[#520052]" size={24} />
+                    <h3 className="text-lg font-medium">Address</h3>
+                  </div>
+                  <p className="text-[#8A8A8A]">{contact.address}</p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
 
       {showServiceModal && (
