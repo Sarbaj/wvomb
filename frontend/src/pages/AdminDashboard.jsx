@@ -195,26 +195,27 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#F2F2F2]">
       {/* Header */}
       <div className="bg-white border-b border-[#E5E5E5] sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-light">Admin Dashboard</h1>
-              <p className="text-sm text-[#8A8A8A] mt-1">Manage your services and messages</p>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+          <div className="flex justify-between items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-light truncate">Admin Dashboard</h1>
+              <p className="text-xs sm:text-sm text-[#8A8A8A] mt-1 hidden sm:block">Manage your services and messages</p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm sm:text-base flex-shrink-0"
             >
-              <LogOut size={18} />
-              Logout
+              <LogOut size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Logout</span>
+              <span className="sm:hidden">Exit</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
         {/* Navigation Tabs */}
-        <div className="bg-white rounded-lg p-2 mb-6 flex gap-2">
+        <div className="bg-white rounded-lg p-1 sm:p-2 mb-4 md:mb-6 flex gap-1 sm:gap-2 overflow-x-auto">
           {[
             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
             { id: 'services', label: 'Services', icon: Package },
@@ -224,14 +225,15 @@ export default function AdminDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded transition-all ${
+              className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded transition-all whitespace-nowrap text-sm sm:text-base ${
                 activeTab === tab.id
                   ? 'bg-[#520052] text-white'
                   : 'text-[#8A8A8A] hover:bg-[#F2F2F2]'
               }`}
             >
-              <tab.icon size={18} />
-              {tab.label}
+              <tab.icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.slice(0, 4)}</span>
             </button>
           ))}
         </div>
@@ -364,12 +366,12 @@ export default function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg p-6"
+            className="bg-white rounded-lg p-4 md:p-6"
           >
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
               <div>
-                <h2 className="text-2xl font-light">Services Management</h2>
-                <p className="text-sm text-[#8A8A8A] mt-1">
+                <h2 className="text-xl md:text-2xl font-light">Services Management</h2>
+                <p className="text-xs sm:text-sm text-[#8A8A8A] mt-1">
                   {stats.activeServices} active of {stats.totalServices} total
                 </p>
               </div>
@@ -378,28 +380,28 @@ export default function AdminDashboard() {
                   setEditingService(null);
                   setShowServiceModal(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
               >
-                <Plus size={18} />
+                <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
                 Add Service
               </button>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3 md:gap-4">
               {services.map((service, index) => (
                 <motion.div
                   key={service._id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="border border-[#E5E5E5] rounded-lg p-5 hover:shadow-lg transition-all"
+                  className="border border-[#E5E5E5] rounded-lg p-4 md:p-5 hover:shadow-lg transition-all"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {service.icon && <span className="text-2xl">{service.icon}</span>}
-                        <h3 className="text-xl font-medium">{service.title}</h3>
-                        <span className={`px-3 py-1 text-xs rounded-full ${
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                        {service.icon && <span className="text-xl md:text-2xl flex-shrink-0">{service.icon}</span>}
+                        <h3 className="text-base sm:text-lg md:text-xl font-medium break-words">{service.title}</h3>
+                        <span className={`px-2 md:px-3 py-1 text-xs rounded-full whitespace-nowrap ${
                           service.isActive 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-gray-100 text-gray-800'
@@ -407,12 +409,12 @@ export default function AdminDashboard() {
                           {service.isActive ? '● Active' : '○ Inactive'}
                         </span>
                       </div>
-                      <p className="text-[#8A8A8A] text-sm mb-3">{service.description}</p>
+                      <p className="text-[#8A8A8A] text-xs sm:text-sm mb-2 md:mb-3 break-words">{service.description}</p>
                       <p className="text-xs text-[#8A8A8A]">
                         Created: {new Date(service.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
                       <button
                         onClick={() => {
                           setEditingService(service);
@@ -421,14 +423,14 @@ export default function AdminDashboard() {
                         className="p-2 hover:bg-[#F2F2F2] rounded transition-colors"
                         title="Edit service"
                       >
-                        <Edit2 size={18} />
+                        <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </button>
                       <button
                         onClick={() => deleteService(service._id)}
                         className="p-2 hover:bg-red-50 text-red-600 rounded transition-colors"
                         title="Delete service"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </button>
                     </div>
                   </div>
@@ -445,28 +447,28 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-lg p-6"
           >
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex flex-col gap-3 md:gap-4 mb-4 md:mb-6">
               <div>
-                <h2 className="text-2xl font-light">Contact Messages</h2>
-                <p className="text-sm text-[#8A8A8A] mt-1">
+                <h2 className="text-xl md:text-2xl font-light">Contact Messages</h2>
+                <p className="text-xs sm:text-sm text-[#8A8A8A] mt-1">
                   {filteredMessages.length} of {messages.length} messages
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8A8A]" size={18} />
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8A8A]" size={16} />
                   <input
                     type="text"
-                    placeholder="Search messages..."
+                    placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052]"
+                    className="w-full pl-9 pr-3 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052] text-sm"
                   />
                 </div>
                 <select
                   value={messageFilter}
                   onChange={(e) => setMessageFilter(e.target.value)}
-                  className="px-4 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052]"
+                  className="px-3 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052] text-sm"
                 >
                   <option value="all">All Time</option>
                   <option value="today">Today</option>
@@ -475,10 +477,11 @@ export default function AdminDashboard() {
                 </select>
                 <button
                   onClick={exportMessages}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors"
+                  className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors text-sm"
                 >
-                  <Download size={18} />
-                  Export CSV
+                  <Download size={16} />
+                  <span className="hidden sm:inline">Export CSV</span>
+                  <span className="sm:hidden">Export</span>
                 </button>
               </div>
             </div>
@@ -554,16 +557,16 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-lg p-6"
           >
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
               <div>
-                <h2 className="text-2xl font-light">Contact Information</h2>
-                <p className="text-sm text-[#8A8A8A] mt-1">Manage your business contact details</p>
+                <h2 className="text-xl md:text-2xl font-light">Contact Information</h2>
+                <p className="text-xs sm:text-sm text-[#8A8A8A] mt-1">Manage your business contact details</p>
               </div>
               <button
                 onClick={() => setShowContactModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
               >
-                <Edit2 size={18} />
+                <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                 Update Contact
               </button>
             </div>
@@ -681,13 +684,13 @@ function ServiceModal({ service, onClose, onSave, token }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 md:p-6 z-50">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-2xl mb-6">{service ? 'Edit' : 'Add'} Service</h2>
+        <h2 className="text-xl md:text-2xl mb-4 md:mb-6">{service ? 'Edit' : 'Add'} Service</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -784,13 +787,13 @@ function ContactModal({ contact, onClose, onSave, token }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 md:p-6 z-50">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-lg p-6 max-w-2xl w-full"
+        className="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-2xl mb-6">Update Contact Details</h2>
+        <h2 className="text-xl md:text-2xl mb-4 md:mb-6">Update Contact Details</h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -850,31 +853,31 @@ function ContactModal({ contact, onClose, onSave, token }) {
 
 function MessageModal({ message, onClose, onDelete, getServiceName }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 md:p-6 z-50">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <div className="flex justify-between items-start mb-6">
-          <h2 className="text-2xl">Message Details</h2>
+        <div className="flex justify-between items-start mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl">Message Details</h2>
           <button
             onClick={onClose}
-            className="text-[#8A8A8A] hover:text-black"
+            className="text-[#8A8A8A] hover:text-black text-2xl leading-none"
           >
             ✕
           </button>
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-3 md:space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
-              <label className="block text-sm text-[#8A8A8A] mb-1">Name</label>
-              <p className="text-lg font-medium">{message.name}</p>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Name</label>
+              <p className="text-base md:text-lg font-medium break-words">{message.name}</p>
             </div>
             <div>
-              <label className="block text-sm text-[#8A8A8A] mb-1">Email</label>
-              <a href={`mailto:${message.email}`} className="text-lg text-[#520052] hover:underline">
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Email</label>
+              <a href={`mailto:${message.email}`} className="text-base md:text-lg text-[#520052] hover:underline break-all">
                 {message.email}
               </a>
             </div>
@@ -882,45 +885,45 @@ function MessageModal({ message, onClose, onDelete, getServiceName }) {
 
           {message.company && (
             <div>
-              <label className="block text-sm text-[#8A8A8A] mb-1">Company</label>
-              <p className="text-lg">{message.company}</p>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Company</label>
+              <p className="text-base md:text-lg break-words">{message.company}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm text-[#8A8A8A] mb-1">Service Interest</label>
-            <p className="text-lg font-medium text-[#520052]">{getServiceName(message.service)}</p>
+            <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Service Interest</label>
+            <p className="text-base md:text-lg font-medium text-[#520052] break-words">{getServiceName(message.service)}</p>
           </div>
 
           <div>
-            <label className="block text-sm text-[#8A8A8A] mb-1">Message</label>
-            <div className="bg-[#F2F2F2] p-4 rounded whitespace-pre-wrap">
+            <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Message</label>
+            <div className="bg-[#F2F2F2] p-3 md:p-4 rounded whitespace-pre-wrap text-sm md:text-base break-words">
               {message.message}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm text-[#8A8A8A] mb-1">Submitted</label>
-            <p className="text-sm">{new Date(message.createdAt).toLocaleString()}</p>
+            <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Submitted</label>
+            <p className="text-xs sm:text-sm">{new Date(message.createdAt).toLocaleString()}</p>
           </div>
 
           {message.emailSent && (
-            <div className="bg-green-50 border border-green-200 rounded p-3">
-              <p className="text-sm text-green-800">✓ Email notification sent</p>
+            <div className="bg-green-50 border border-green-200 rounded p-2 md:p-3">
+              <p className="text-xs sm:text-sm text-green-800">✓ Email notification sent</p>
             </div>
           )}
         </div>
 
-        <div className="flex gap-3 pt-6 mt-6 border-t">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 md:pt-6 mt-4 md:mt-6 border-t">
           <button
             onClick={onDelete}
-            className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
+            className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 text-sm sm:text-base"
           >
             Delete Message
           </button>
           <button
             onClick={onClose}
-            className="flex-1 border border-[#E5E5E5] py-2 rounded hover:bg-[#F2F2F2]"
+            className="flex-1 border border-[#E5E5E5] py-2 rounded hover:bg-[#F2F2F2] text-sm sm:text-base"
           >
             Close
           </button>
