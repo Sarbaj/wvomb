@@ -445,7 +445,7 @@ export default function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg p-6"
+            className="bg-white rounded-lg p-4 md:p-6"
           >
             <div className="flex flex-col gap-3 md:gap-4 mb-4 md:mb-6">
               <div>
@@ -487,12 +487,12 @@ export default function AdminDashboard() {
             </div>
 
             {filteredMessages.length === 0 ? (
-              <div className="text-center py-12">
-                <MessageSquare className="mx-auto text-[#E5E5E5] mb-4" size={48} />
-                <p className="text-[#8A8A8A]">No messages found</p>
+              <div className="text-center py-8 md:py-12">
+                <MessageSquare className="mx-auto text-[#E5E5E5] mb-4" size={40} />
+                <p className="text-[#8A8A8A] text-sm md:text-base">No messages found</p>
               </div>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-3 md:gap-4">
                 <AnimatePresence>
                   {filteredMessages.map((message, index) => (
                     <motion.div
@@ -501,34 +501,34 @@ export default function AdminDashboard() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ delay: index * 0.03 }}
-                      className="border border-[#E5E5E5] rounded-lg p-5 hover:shadow-lg hover:border-[#520052] transition-all cursor-pointer"
+                      className="border border-[#E5E5E5] rounded-lg p-3 sm:p-4 md:p-5 hover:shadow-lg hover:border-[#520052] transition-all cursor-pointer"
                       onClick={() => {
                         setSelectedMessage(message);
                         setShowMessageModal(true);
                       }}
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-medium">{message.name}</h3>
-                            <span className="text-sm text-[#8A8A8A]">{message.email}</span>
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0 w-full">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
+                            <h3 className="text-base sm:text-lg font-medium break-words">{message.name}</h3>
+                            <span className="text-xs sm:text-sm text-[#8A8A8A] break-all">{message.email}</span>
                             {message.emailSent && (
-                              <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                              <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded w-fit">
                                 <CheckCircle size={12} />
                                 Sent
                               </span>
                             )}
                           </div>
                           {message.company && (
-                            <p className="text-sm text-[#8A8A8A] mb-2">Company: {message.company}</p>
+                            <p className="text-xs sm:text-sm text-[#8A8A8A] mb-2 break-words">Company: {message.company}</p>
                           )}
-                          <p className="text-sm text-[#520052] font-medium mb-2">
+                          <p className="text-xs sm:text-sm text-[#520052] font-medium mb-2 break-words">
                             {getServiceName(message.service)}
                           </p>
-                          <p className="text-[#8A8A8A] text-sm line-clamp-2 mb-2">{message.message}</p>
+                          <p className="text-[#8A8A8A] text-xs sm:text-sm line-clamp-2 mb-2 break-words">{message.message}</p>
                           <div className="flex items-center gap-2 text-xs text-[#8A8A8A]">
                             <Clock size={12} />
-                            {new Date(message.createdAt).toLocaleString()}
+                            <span className="break-all">{new Date(message.createdAt).toLocaleString()}</span>
                           </div>
                         </div>
                         <button
@@ -536,10 +536,10 @@ export default function AdminDashboard() {
                             e.stopPropagation();
                             deleteMessage(message._id);
                           }}
-                          className="p-2 hover:bg-red-50 text-red-600 rounded transition-colors"
+                          className="p-2 hover:bg-red-50 text-red-600 rounded transition-colors self-end sm:self-start flex-shrink-0"
                           title="Delete message"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </button>
                       </div>
                     </motion.div>
@@ -555,7 +555,7 @@ export default function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg p-6"
+            className="bg-white rounded-lg p-4 md:p-6"
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
               <div>
@@ -572,33 +572,33 @@ export default function AdminDashboard() {
             </div>
 
             {contact && (
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="border border-[#E5E5E5] rounded-lg p-5">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Mail className="text-[#520052]" size={24} />
-                    <h3 className="text-lg font-medium">Email</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="border border-[#E5E5E5] rounded-lg p-4 md:p-5">
+                  <div className="flex items-center gap-3 mb-3 md:mb-4">
+                    <Mail className="text-[#520052] flex-shrink-0" size={20} />
+                    <h3 className="text-base md:text-lg font-medium">Email</h3>
                   </div>
-                  <a href={`mailto:${contact.email}`} className="text-[#520052] hover:underline">
+                  <a href={`mailto:${contact.email}`} className="text-[#520052] hover:underline break-all text-sm md:text-base">
                     {contact.email}
                   </a>
                 </div>
 
-                <div className="border border-[#E5E5E5] rounded-lg p-5">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Users className="text-[#520052]" size={24} />
-                    <h3 className="text-lg font-medium">Phone</h3>
+                <div className="border border-[#E5E5E5] rounded-lg p-4 md:p-5">
+                  <div className="flex items-center gap-3 mb-3 md:mb-4">
+                    <Users className="text-[#520052] flex-shrink-0" size={20} />
+                    <h3 className="text-base md:text-lg font-medium">Phone</h3>
                   </div>
-                  <a href={`tel:${contact.phone}`} className="text-[#520052] hover:underline">
+                  <a href={`tel:${contact.phone}`} className="text-[#520052] hover:underline break-all text-sm md:text-base">
                     {contact.phone}
                   </a>
                 </div>
 
-                <div className="border border-[#E5E5E5] rounded-lg p-5 md:col-span-2">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Settings className="text-[#520052]" size={24} />
-                    <h3 className="text-lg font-medium">Address</h3>
+                <div className="border border-[#E5E5E5] rounded-lg p-4 md:p-5 md:col-span-2">
+                  <div className="flex items-center gap-3 mb-3 md:mb-4">
+                    <Settings className="text-[#520052] flex-shrink-0" size={20} />
+                    <h3 className="text-base md:text-lg font-medium">Address</h3>
                   </div>
-                  <p className="text-[#8A8A8A]">{contact.address}</p>
+                  <p className="text-[#8A8A8A] break-words text-sm md:text-base">{contact.address}</p>
                 </div>
               </div>
             )}
