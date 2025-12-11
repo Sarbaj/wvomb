@@ -72,9 +72,9 @@ const generateEmailTemplate = (userName, userEmail, company, service, message) =
                 <td style="padding: 40px;">
                   
                   <!-- Alert Badge -->
-                  <div style="background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin-bottom: 30px; border-radius: 4px;">
-                    <p style="margin: 0; color: #92400E; font-size: 14px; font-weight: 600;">
-                      🔔 New inquiry received from your website
+                  <div style="background-color: #F0F9FF; border-left: 4px solid #0EA5E9; padding: 16px; margin-bottom: 30px; border-radius: 4px;">
+                    <p style="margin: 0; color: #0C4A6E; font-size: 14px; font-weight: 600;">
+                      New inquiry received from your website
                     </p>
                   </div>
 
@@ -138,8 +138,8 @@ const generateEmailTemplate = (userName, userEmail, company, service, message) =
 
                   <!-- Action Button -->
                   <div style="margin-top: 32px; text-align: center;">
-                    <a href="mailto:${userEmail}" style="display: inline-block; background: linear-gradient(135deg, #520052 0%, #8B0066 100%); color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(82, 0, 82, 0.3);">
-                      Reply to ${userName}
+                    <a href="mailto:${userEmail}" style="display: inline-block; background-color: #520052; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                      Contact ${userName}
                     </a>
                   </div>
 
@@ -219,17 +219,17 @@ const generateAutoReplyTemplate = (userName) => {
                     </div>
                   </div>
 
-                  <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 28px; font-weight: 600; text-align: center;">
-                    Thank You for Reaching Out!
+                  <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 28px; font-weight: 500; text-align: center;">
+                    Thank You for Your Inquiry
                   </h2>
 
                   <p style="margin: 0 0 24px 0; color: #6B7280; font-size: 16px; line-height: 1.6; text-align: center;">
                     Dear <strong style="color: #520052;">${userName}</strong>,
                   </p>
 
-                  <div style="background-color: #F0FDF4; border-left: 4px solid #10B981; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
-                    <p style="margin: 0; color: #065F46; font-size: 15px; line-height: 1.6;">
-                      ✓ We have successfully received your message and appreciate you taking the time to contact us.
+                  <div style="background-color: #F0F9FF; border-left: 4px solid #0EA5E9; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
+                    <p style="margin: 0; color: #0C4A6E; font-size: 15px; line-height: 1.6;">
+                      We have received your message and appreciate you taking the time to contact us.
                     </p>
                   </div>
 
@@ -243,8 +243,8 @@ const generateAutoReplyTemplate = (userName) => {
 
                   <!-- CTA Button -->
                   <div style="text-align: center; margin: 40px 0;">
-                    <a href="https://wvomb.vercel.app/services" style="display: inline-block; background: linear-gradient(135deg, #520052 0%, #8B0066 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(82, 0, 82, 0.3);">
-                      Explore Our Services
+                    <a href="https://wvomb.vercel.app/services" style="display: inline-block; background-color: #520052; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                      View Our Services
                     </a>
                   </div>
 

@@ -40,43 +40,97 @@ router.post('/sell', async (req, res) => {
     await businessSale.save();
 
     // Send notification email
-    try {
-      const emailContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #520052 0%, #8B008B 100%); padding: 30px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">New Business Sale Submission</h1>
-          </div>
-          
-          <div style="padding: 30px; background: #f9f9f9;">
-            <h2 style="color: #520052; margin-bottom: 20px;">Business Details</h2>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <p><strong>Company Name:</strong> ${companyName}</p>
-              <p><strong>Expected Valuation:</strong> ${expectedValuation}</p>
-              <p><strong>Equity Percentage:</strong> ${equityPercentage}%</p>
-              <p><strong>Sector:</strong> ${sector}</p>
-              <p><strong>Contact Number:</strong> ${contactNumber}</p>
-              <p><strong>Email:</strong> ${email}</p>
-              ${additionalInfo ? `<p><strong>Additional Information:</strong> ${additionalInfo}</p>` : ''}
-            </div>
-            
-            <div style="background: #520052; color: white; padding: 15px; border-radius: 8px; text-align: center;">
-              <p style="margin: 0;">Submitted on: ${new Date().toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-      `;
+    if (process.env.BREVO_API_KEY) {
+      try {
+        const emailContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>New Business Sale Submission</title>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
+            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td align="center" style="padding: 40px 0;">
+                  <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff;">
+                    
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 0;">
+                        <div style="background-color: #520052; padding: 30px; text-align: center;">
+                          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 500;">
+                            WVOMB - Business Sale Submission
+                          </h1>
+                        </div>
+                      </td>
+                    </tr>
 
-      await sendEmail({
-        to: process.env.ADMIN_EMAIL || 'admin@wvomb.com',
-        subject: `New Business Sale Submission - ${companyName}`,
-        html: emailContent
-      });
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 30px;">
+                        <div style="background-color: #F0F9FF; border-left: 4px solid #0EA5E9; padding: 16px; margin-bottom: 30px; border-radius: 4px;">
+                          <p style="margin: 0; color: #0C4A6E; font-size: 14px; font-weight: 600;">
+                            New business sale inquiry received from your website
+                          </p>
+                        </div>
 
-      businessSale.emailSent = true;
-      await businessSale.save();
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+                        <h2 style="color: #520052; margin-bottom: 20px; font-size: 24px; font-weight: 500;">Business Details</h2>
+                        
+                        <table role="presentation" style="width: 100%; border-collapse: collapse; background: #F9FAFB; padding: 20px; border-radius: 8px;">
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Company Name:</strong></td><td style="padding: 8px 0; color: #111827;">${companyName}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Expected Valuation:</strong></td><td style="padding: 8px 0; color: #111827;">${expectedValuation}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Equity Percentage:</strong></td><td style="padding: 8px 0; color: #111827;">${equityPercentage}%</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Sector:</strong></td><td style="padding: 8px 0; color: #111827;">${sector}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Contact Number:</strong></td><td style="padding: 8px 0; color: #111827;">${contactNumber}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Email:</strong></td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #520052; text-decoration: none;">${email}</a></td></tr>
+                          ${additionalInfo ? `<tr><td style="padding: 8px 0; vertical-align: top;"><strong style="color: #6B7280;">Additional Info:</strong></td><td style="padding: 8px 0; color: #111827;">${additionalInfo}</td></tr>` : ''}
+                        </table>
+                        
+                        <div style="background-color: #520052; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-top: 20px;">
+                          <p style="margin: 0; font-size: 14px;">Submitted on: ${new Date().toLocaleString()}</p>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                          <a href="mailto:${email}" style="display: inline-block; background-color: #520052; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                            Contact ${companyName}
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 20px; background-color: #F9FAFB; border-top: 1px solid #E5E7EB; text-align: center;">
+                        <p style="margin: 0; color: #6B7280; font-size: 12px;">
+                          © ${new Date().getFullYear()} WVOMB Advisors. Business Sale Platform.
+                        </p>
+                      </td>
+                    </tr>
+
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `;
+
+        await sendEmail({
+          to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
+          subject: `Business Sale Inquiry - ${companyName}`,
+          html: emailContent
+        });
+
+        businessSale.emailSent = true;
+        await businessSale.save();
+        console.log('✅ Business sale notification sent');
+      } catch (emailError) {
+        console.error('⚠️ Email sending failed:', emailError);
+      }
+    } else {
+      console.log('ℹ️ Brevo API not configured - business sale saved to database only');
     }
 
     res.status(201).json({
@@ -126,43 +180,97 @@ router.post('/buy', async (req, res) => {
     await businessBuy.save();
 
     // Send notification email
-    try {
-      const emailContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #520052 0%, #8B008B 100%); padding: 30px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">New Investment Interest</h1>
-          </div>
-          
-          <div style="padding: 30px; background: #f9f9f9;">
-            <h2 style="color: #520052; margin-bottom: 20px;">Investor Details</h2>
-            
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-              <p><strong>Investor Name:</strong> ${investorName}</p>
-              <p><strong>Investment Amount:</strong> ${investmentAmount}</p>
-              <p><strong>Preferred Sector:</strong> ${preferredSector || 'Not specified'}</p>
-              <p><strong>Contact Number:</strong> ${contactNumber}</p>
-              <p><strong>Email:</strong> ${email}</p>
-              ${otherConditions ? `<p><strong>Other Conditions:</strong> ${otherConditions}</p>` : ''}
-              ${additionalInfo ? `<p><strong>Additional Information:</strong> ${additionalInfo}</p>` : ''}
-            </div>
-            
-            <div style="background: #520052; color: white; padding: 15px; border-radius: 8px; text-align: center;">
-              <p style="margin: 0;">Submitted on: ${new Date().toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-      `;
+    if (process.env.BREVO_API_KEY) {
+      try {
+        const emailContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>New Investment Interest</title>
+          </head>
+          <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, sans-serif;">
+            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td align="center" style="padding: 40px 0;">
+                  <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff;">
+                    
+                    <!-- Header -->
+                    <tr>
+                      <td style="padding: 0;">
+                        <div style="background-color: #520052; padding: 30px; text-align: center;">
+                          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 500;">
+                            WVOMB - Investment Interest
+                          </h1>
+                        </div>
+                      </td>
+                    </tr>
 
-      await sendEmail({
-        to: process.env.ADMIN_EMAIL || 'admin@wvomb.com',
-        subject: `New Investment Interest - ${investorName}`,
-        html: emailContent
-      });
+                    <!-- Content -->
+                    <tr>
+                      <td style="padding: 30px;">
+                        <div style="background-color: #F0F9FF; border-left: 4px solid #0EA5E9; padding: 16px; margin-bottom: 30px; border-radius: 4px;">
+                          <p style="margin: 0; color: #0C4A6E; font-size: 14px; font-weight: 600;">
+                            New investment interest received from your website
+                          </p>
+                        </div>
 
-      businessBuy.emailSent = true;
-      await businessBuy.save();
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+                        <h2 style="color: #520052; margin-bottom: 20px; font-size: 24px; font-weight: 500;">Investor Details</h2>
+                        
+                        <table role="presentation" style="width: 100%; border-collapse: collapse; background: #F9FAFB; padding: 20px; border-radius: 8px;">
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Investor Name:</strong></td><td style="padding: 8px 0; color: #111827;">${investorName}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Investment Amount:</strong></td><td style="padding: 8px 0; color: #111827;">${investmentAmount}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Preferred Sector:</strong></td><td style="padding: 8px 0; color: #111827;">${preferredSector || 'Any Sector'}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Contact Number:</strong></td><td style="padding: 8px 0; color: #111827;">${contactNumber}</td></tr>
+                          <tr><td style="padding: 8px 0;"><strong style="color: #6B7280;">Email:</strong></td><td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #520052; text-decoration: none;">${email}</a></td></tr>
+                          ${otherConditions ? `<tr><td style="padding: 8px 0; vertical-align: top;"><strong style="color: #6B7280;">Conditions:</strong></td><td style="padding: 8px 0; color: #111827;">${otherConditions}</td></tr>` : ''}
+                          ${additionalInfo ? `<tr><td style="padding: 8px 0; vertical-align: top;"><strong style="color: #6B7280;">Additional Info:</strong></td><td style="padding: 8px 0; color: #111827;">${additionalInfo}</td></tr>` : ''}
+                        </table>
+                        
+                        <div style="background-color: #520052; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-top: 20px;">
+                          <p style="margin: 0; font-size: 14px;">Submitted on: ${new Date().toLocaleString()}</p>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 30px;">
+                          <a href="mailto:${email}" style="display: inline-block; background-color: #520052; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">
+                            Contact ${investorName}
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 20px; background-color: #F9FAFB; border-top: 1px solid #E5E7EB; text-align: center;">
+                        <p style="margin: 0; color: #6B7280; font-size: 12px;">
+                          © ${new Date().getFullYear()} WVOMB Advisors. Investment Platform.
+                        </p>
+                      </td>
+                    </tr>
+
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `;
+
+        await sendEmail({
+          to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
+          subject: `Investment Interest - ${investorName}`,
+          html: emailContent
+        });
+
+        businessBuy.emailSent = true;
+        await businessBuy.save();
+        console.log('✅ Investment interest notification sent');
+      } catch (emailError) {
+        console.error('⚠️ Email sending failed:', emailError);
+      }
+    } else {
+      console.log('ℹ️ Brevo API not configured - investment interest saved to database only');
     }
 
     res.status(201).json({

@@ -11,15 +11,20 @@ export default function AdminDashboard() {
   const [contact, setContact] = useState(null);
   const [messages, setMessages] = useState([]);
   const [articles, setArticles] = useState([]);
+  const [businessSales, setBusinessSales] = useState([]);
+  const [businessInvestments, setBusinessInvestments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [messageFilter, setMessageFilter] = useState('all');
+  const [businessFilter, setBusinessFilter] = useState('all');
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showArticleModal, setShowArticleModal] = useState(false);
+  const [showBusinessModal, setShowBusinessModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [editingArticle, setEditingArticle] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalMessages: 0,
@@ -27,7 +32,10 @@ export default function AdminDashboard() {
     activeServices: 0,
     totalServices: 0,
     totalArticles: 0,
-    publishedArticles: 0
+    publishedArticles: 0,
+    totalBusinessSales: 0,
+    totalBusinessInvestments: 0,
+    pendingBusinessInquiries: 0
   });
   const navigate = useNavigate();
 
@@ -43,7 +51,7 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [servicesRes, contactRes, messagesRes, articlesRes] = await Promise.all([
+      const [servicesRes, contactRes, messagesRes, articlesRes, businessSalesRes, businessInvestmentsRes] = await Promise.all([
         fetch(`${API_URL}/api/services/all`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
@@ -52,6 +60,12 @@ export default function AdminDashboard() {
           headers: { Authorization: `Bearer ${token}` }
         }),
         fetch(`${API_URL}/api/articles/admin/all`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/api/business/sales`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/api/business/investments`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -85,6 +99,25 @@ export default function AdminDashboard() {
           ...prev,
           totalArticles: articlesData.articles.length,
           publishedArticles: articlesData.articles.filter(a => a.isPublished).length
+        }));
+      }
+      if (businessSalesRes.ok) {
+        const salesData = await businessSalesRes.json();
+        setBusinessSales(salesData);
+        setStats(prev => ({
+          ...prev,
+          totalBusinessSales: salesData.length
+        }));
+      }
+      if (businessInvestmentsRes.ok) {
+        const investmentsData = await businessInvestmentsRes.json();
+        setBusinessInvestments(investmentsData);
+        const totalPending = [...(businessSalesRes.ok ? await businessSalesRes.json() : []), ...investmentsData]
+          .filter(item => item.status === 'pending').length;
+        setStats(prev => ({
+          ...prev,
+          totalBusinessInvestments: investmentsData.length,
+          pendingBusinessInquiries: totalPending
         }));
       }
     } catch (err) {
@@ -254,6 +287,7 @@ export default function AdminDashboard() {
             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
             { id: 'services', label: 'Services', icon: Package },
             { id: 'articles', label: 'Articles', icon: FileText },
+            { id: 'business', label: 'Business', icon: TrendingUp },
             { id: 'messages', label: 'Messages', icon: MessageSquare },
             { id: 'contact', label: 'Contact', icon: Mail }
           ].map(tab => (
@@ -301,8 +335,8 @@ export default function AdminDashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#8A8A8A] mb-1">New Today</p>
-                    <p className="text-3xl font-light">{stats.newMessages}</p>
+                    <p className="text-sm text-[#8A8A8A] mb-1">Business Inquiries</p>
+                    <p className="text-3xl font-light">{stats.totalBusinessSales + stats.totalBusinessInvestments}</p>
                   </div>
                   <TrendingUp className="text-green-500" size={32} />
                 </div>
@@ -327,10 +361,10 @@ export default function AdminDashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#8A8A8A] mb-1">Total Services</p>
-                    <p className="text-3xl font-light">{stats.totalServices}</p>
+                    <p className="text-sm text-[#8A8A8A] mb-1">Pending Reviews</p>
+                    <p className="text-3xl font-light">{stats.pendingBusinessInquiries}</p>
                   </div>
-                  <Settings className="text-orange-500" size={32} />
+                  <Clock className="text-orange-500" size={32} />
                 </div>
               </motion.div>
             </div>
@@ -729,6 +763,186 @@ export default function AdminDashboard() {
             )}
           </motion.div>
         )}
+
+        {/* Business Tab */}
+        {activeTab === 'business' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-4 md:p-6"
+          >
+            <div className="flex flex-col gap-3 md:gap-4 mb-4 md:mb-6">
+              <div>
+                <h2 className="text-xl md:text-2xl font-light">Business Inquiries</h2>
+                <p className="text-xs sm:text-sm text-[#8A8A8A] mt-1">
+                  {businessSales.length} sales • {businessInvestments.length} investments
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8A8A]" size={16} />
+                  <input
+                    type="text"
+                    placeholder="Search businesses..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052] text-sm"
+                  />
+                </div>
+                <select
+                  value={businessFilter}
+                  onChange={(e) => setBusinessFilter(e.target.value)}
+                  className="px-3 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052] text-sm"
+                >
+                  <option value="all">All Inquiries</option>
+                  <option value="sales">Business Sales</option>
+                  <option value="investments">Investment Interests</option>
+                  <option value="pending">Pending Review</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Business Sales Section */}
+            {(businessFilter === 'all' || businessFilter === 'sales') && (
+              <div className="mb-8">
+                <h3 className="text-lg font-medium mb-4 text-[#520052]">Business Sales ({businessSales.length})</h3>
+                <div className="grid gap-3 md:gap-4">
+                  {businessSales
+                    .filter(sale => 
+                      searchTerm === '' || 
+                      sale.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      sale.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      sale.sector.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .filter(sale => businessFilter !== 'pending' || sale.status === 'pending')
+                    .map((sale, index) => (
+                    <motion.div
+                      key={sale._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="border border-[#E5E5E5] rounded-lg p-3 sm:p-4 md:p-5 hover:shadow-lg hover:border-[#520052] transition-all cursor-pointer"
+                      onClick={() => {
+                        setSelectedBusiness({ ...sale, type: 'sale' });
+                        setShowBusinessModal(true);
+                      }}
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0 w-full">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
+                            <h3 className="text-base sm:text-lg font-medium break-words">{sale.companyName}</h3>
+                            <span className={`px-2 py-1 text-xs rounded-full w-fit ${
+                              sale.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              sale.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
+                              sale.status === 'matched' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
+                            </span>
+                            {sale.emailSent && (
+                              <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded w-fit">
+                                <CheckCircle size={12} />
+                                Email Sent
+                              </span>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-[#8A8A8A] mb-2">
+                            <p><strong>Valuation:</strong> {sale.expectedValuation}</p>
+                            <p><strong>Equity:</strong> {sale.equityPercentage}%</p>
+                            <p><strong>Sector:</strong> {sale.sector}</p>
+                            <p><strong>Contact:</strong> {sale.contactNumber}</p>
+                          </div>
+                          <p className="text-xs sm:text-sm text-[#520052] break-all mb-2">{sale.email}</p>
+                          <div className="flex items-center gap-2 text-xs text-[#8A8A8A]">
+                            <Clock size={12} />
+                            <span>{new Date(sale.createdAt).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Investment Interests Section */}
+            {(businessFilter === 'all' || businessFilter === 'investments') && (
+              <div>
+                <h3 className="text-lg font-medium mb-4 text-[#520052]">Investment Interests ({businessInvestments.length})</h3>
+                <div className="grid gap-3 md:gap-4">
+                  {businessInvestments
+                    .filter(investment => 
+                      searchTerm === '' || 
+                      investment.investorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      investment.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      (investment.preferredSector && investment.preferredSector.toLowerCase().includes(searchTerm.toLowerCase()))
+                    )
+                    .filter(investment => businessFilter !== 'pending' || investment.status === 'pending')
+                    .map((investment, index) => (
+                    <motion.div
+                      key={investment._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="border border-[#E5E5E5] rounded-lg p-3 sm:p-4 md:p-5 hover:shadow-lg hover:border-[#520052] transition-all cursor-pointer"
+                      onClick={() => {
+                        setSelectedBusiness({ ...investment, type: 'investment' });
+                        setShowBusinessModal(true);
+                      }}
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0 w-full">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
+                            <h3 className="text-base sm:text-lg font-medium break-words">{investment.investorName}</h3>
+                            <span className={`px-2 py-1 text-xs rounded-full w-fit ${
+                              investment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              investment.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
+                              investment.status === 'matched' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {investment.status.charAt(0).toUpperCase() + investment.status.slice(1)}
+                            </span>
+                            {investment.emailSent && (
+                              <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded w-fit">
+                                <CheckCircle size={12} />
+                                Email Sent
+                              </span>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-[#8A8A8A] mb-2">
+                            <p><strong>Investment:</strong> {investment.investmentAmount}</p>
+                            <p><strong>Preferred Sector:</strong> {investment.preferredSector || 'Any'}</p>
+                            <p><strong>Contact:</strong> {investment.contactNumber}</p>
+                          </div>
+                          <p className="text-xs sm:text-sm text-[#520052] break-all mb-2">{investment.email}</p>
+                          {investment.otherConditions && (
+                            <p className="text-xs sm:text-sm text-[#8A8A8A] mb-2 break-words">
+                              <strong>Conditions:</strong> {investment.otherConditions}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-[#8A8A8A]">
+                            <Clock size={12} />
+                            <span>{new Date(investment.createdAt).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {((businessFilter === 'all' && businessSales.length === 0 && businessInvestments.length === 0) ||
+              (businessFilter === 'sales' && businessSales.length === 0) ||
+              (businessFilter === 'investments' && businessInvestments.length === 0)) && (
+              <div className="text-center py-8 md:py-12">
+                <TrendingUp className="mx-auto text-[#E5E5E5] mb-4" size={40} />
+                <p className="text-[#8A8A8A] text-sm md:text-base">No business inquiries found</p>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
 
       {showServiceModal && (
@@ -782,6 +996,22 @@ export default function AdminDashboard() {
             fetchData();
             setShowArticleModal(false);
             setEditingArticle(null);
+          }}
+          token={token}
+        />
+      )}
+
+      {showBusinessModal && selectedBusiness && (
+        <BusinessModal
+          business={selectedBusiness}
+          onClose={() => {
+            setShowBusinessModal(false);
+            setSelectedBusiness(null);
+          }}
+          onStatusUpdate={() => {
+            fetchData();
+            setShowBusinessModal(false);
+            setSelectedBusiness(null);
           }}
           token={token}
         />
@@ -1303,6 +1533,210 @@ function ArticleModal({ article, onClose, onSave, token }) {
             </button>
           </div>
         </form>
+      </motion.div>
+    </div>
+  );
+}
+function BusinessModal({ business, onClose, onStatusUpdate, token }) {
+  const [status, setStatus] = useState(business.status || 'pending');
+  const [updating, setUpdating] = useState(false);
+
+  const handleStatusUpdate = async () => {
+    setUpdating(true);
+    try {
+      const endpoint = business.type === 'sale' ? 'sales' : 'investments';
+      const response = await fetch(`${API_URL}/api/business/${endpoint}/${business._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (response.ok) {
+        onStatusUpdate();
+      } else {
+        alert('Failed to update status');
+      }
+    } catch (err) {
+      alert('Error updating status');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Are you sure you want to delete this ${business.type === 'sale' ? 'business sale' : 'investment interest'}?`)) return;
+
+    try {
+      const endpoint = business.type === 'sale' ? 'sales' : 'investments';
+      const response = await fetch(`${API_URL}/api/business/${endpoint}/${business._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        onStatusUpdate();
+      } else {
+        alert('Failed to delete');
+      }
+    } catch (err) {
+      alert('Error deleting');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 md:p-6 z-50">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex justify-between items-start mb-4 md:mb-6">
+          <h2 className="text-xl md:text-2xl">
+            {business.type === 'sale' ? 'Business Sale Details' : 'Investment Interest Details'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-[#8A8A8A] hover:text-black text-2xl leading-none"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="space-y-3 md:space-y-4">
+          {business.type === 'sale' ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Company Name</label>
+                  <p className="text-base md:text-lg font-medium break-words">{business.companyName}</p>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Expected Valuation</label>
+                  <p className="text-base md:text-lg break-words">{business.expectedValuation}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Equity Percentage</label>
+                  <p className="text-base md:text-lg">{business.equityPercentage}%</p>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Sector</label>
+                  <p className="text-base md:text-lg">{business.sector}</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Investor Name</label>
+                  <p className="text-base md:text-lg font-medium break-words">{business.investorName}</p>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Investment Amount</label>
+                  <p className="text-base md:text-lg break-words">{business.investmentAmount}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Preferred Sector</label>
+                  <p className="text-base md:text-lg">{business.preferredSector || 'Any Sector'}</p>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Contact Number</label>
+                  <p className="text-base md:text-lg">{business.contactNumber}</p>
+                </div>
+              </div>
+
+              {business.otherConditions && (
+                <div>
+                  <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Other Conditions</label>
+                  <div className="bg-[#F2F2F2] p-3 md:p-4 rounded whitespace-pre-wrap text-sm md:text-base break-words">
+                    {business.otherConditions}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Email</label>
+              <a href={`mailto:${business.email}`} className="text-base md:text-lg text-[#520052] hover:underline break-all">
+                {business.email}
+              </a>
+            </div>
+            <div>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Contact Number</label>
+              <a href={`tel:${business.contactNumber}`} className="text-base md:text-lg text-[#520052] hover:underline">
+                {business.contactNumber}
+              </a>
+            </div>
+          </div>
+
+          {business.additionalInfo && (
+            <div>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Additional Information</label>
+              <div className="bg-[#F2F2F2] p-3 md:p-4 rounded whitespace-pre-wrap text-sm md:text-base break-words">
+                {business.additionalInfo}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full px-3 py-2 border border-[#E5E5E5] rounded focus:outline-none focus:border-[#520052] text-sm"
+              >
+                <option value="pending">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="matched">Matched</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs sm:text-sm text-[#8A8A8A] mb-1">Submitted</label>
+              <p className="text-xs sm:text-sm pt-2">{new Date(business.createdAt).toLocaleString()}</p>
+            </div>
+          </div>
+
+          {business.emailSent && (
+            <div className="bg-green-50 border border-green-200 rounded p-2 md:p-3">
+              <p className="text-xs sm:text-sm text-green-800">✓ Email notification sent</p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 md:pt-6 mt-4 md:mt-6 border-t">
+          <button
+            onClick={handleStatusUpdate}
+            disabled={updating || status === business.status}
+            className="flex-1 bg-[#520052] text-white py-2 rounded hover:bg-[#6B006B] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+          >
+            {updating ? 'Updating...' : 'Update Status'}
+          </button>
+          <button
+            onClick={handleDelete}
+            className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 text-sm sm:text-base"
+          >
+            Delete
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 border border-[#E5E5E5] py-2 rounded hover:bg-[#F2F2F2] text-sm sm:text-base"
+          >
+            Close
+          </button>
+        </div>
       </motion.div>
     </div>
   );
