@@ -1,6 +1,6 @@
 import express from 'express';
 import Service from '../models/Service.js';
-import { authenticateAdmin } from '../middleware/auth.js';
+import authenticateAdmin from '../middleware/auth.js';
 
 const router = express.Router();
 

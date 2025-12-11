@@ -1,6 +1,6 @@
 import express from 'express';
 import Message from '../models/Message.js';
-import { authenticateAdmin } from '../middleware/auth.js';
+import authenticateAdmin from '../middleware/auth.js';
 import { sendEmail, sendAutoReply, generateEmailTemplate } from '../utils/email.js';
 
 const router = express.Router();
