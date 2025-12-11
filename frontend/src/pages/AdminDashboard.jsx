@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, LogOut, LayoutDashboard, Package, Mail, Settings, Search, TrendingUp, Users, MessageSquare, Download, Filter, CheckCircle, Clock, Archive } from 'lucide-react';
+import { Plus, Edit2, Trash2, LogOut, LayoutDashboard, Package, Mail, Settings, Search, TrendingUp, Users, MessageSquare, Download, Filter, CheckCircle, Clock, Archive, FileText, Eye } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -10,19 +10,24 @@ export default function AdminDashboard() {
   const [services, setServices] = useState([]);
   const [contact, setContact] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [messageFilter, setMessageFilter] = useState('all');
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showArticleModal, setShowArticleModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [editingArticle, setEditingArticle] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalMessages: 0,
     newMessages: 0,
     activeServices: 0,
-    totalServices: 0
+    totalServices: 0,
+    totalArticles: 0,
+    publishedArticles: 0
   });
   const navigate = useNavigate();
 
@@ -38,12 +43,15 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [servicesRes, contactRes, messagesRes] = await Promise.all([
+      const [servicesRes, contactRes, messagesRes, articlesRes] = await Promise.all([
         fetch(`${API_URL}/api/services/all`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         fetch(`${API_URL}/api/contact`),
         fetch(`${API_URL}/api/messages`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/api/articles/admin/all`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -68,6 +76,15 @@ export default function AdminDashboard() {
           ...prev,
           totalMessages: messagesData.length,
           newMessages: newCount
+        }));
+      }
+      if (articlesRes.ok) {
+        const articlesData = await articlesRes.json();
+        setArticles(articlesData.articles);
+        setStats(prev => ({
+          ...prev,
+          totalArticles: articlesData.articles.length,
+          publishedArticles: articlesData.articles.filter(a => a.isPublished).length
         }));
       }
     } catch (err) {
@@ -114,6 +131,23 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       alert('Error deleting message');
+    }
+  };
+
+  const deleteArticle = async (id) => {
+    if (!confirm('Are you sure you want to delete this article?')) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/articles/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setArticles(articles.filter(a => a._id !== id));
+      }
+    } catch (err) {
+      alert('Error deleting article');
     }
   };
 
@@ -219,6 +253,7 @@ export default function AdminDashboard() {
           {[
             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
             { id: 'services', label: 'Services', icon: Package },
+            { id: 'articles', label: 'Articles', icon: FileText },
             { id: 'messages', label: 'Messages', icon: MessageSquare },
             { id: 'contact', label: 'Contact', icon: Mail }
           ].map(tab => (
@@ -550,6 +585,96 @@ export default function AdminDashboard() {
           </motion.div>
         )}
 
+        {/* Articles Tab */}
+        {activeTab === 'articles' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg p-4 md:p-6"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
+              <div>
+                <h2 className="text-xl md:text-2xl font-light">Articles Management</h2>
+                <p className="text-xs sm:text-sm text-[#8A8A8A] mt-1">
+                  {stats.publishedArticles} published of {stats.totalArticles} total
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingArticle(null);
+                  setShowArticleModal(true);
+                }}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
+              >
+                <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
+                Add Article
+              </button>
+            </div>
+
+            <div className="grid gap-3 md:gap-4">
+              {articles.map((article, index) => (
+                <motion.div
+                  key={article._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="border border-[#E5E5E5] rounded-lg p-4 md:p-5 hover:shadow-lg transition-all"
+                >
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                        <h3 className="text-base sm:text-lg md:text-xl font-medium break-words">{article.title}</h3>
+                        <span className={`px-2 md:px-3 py-1 text-xs rounded-full whitespace-nowrap ${
+                          article.isPublished 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {article.isPublished ? '● Published' : '○ Draft'}
+                        </span>
+                        <span className="text-xs bg-[#520052]/10 text-[#520052] px-2 py-1 rounded-full">
+                          {article.category}
+                        </span>
+                      </div>
+                      <p className="text-[#8A8A8A] text-xs sm:text-sm mb-2 md:mb-3 break-words">{article.description}</p>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#8A8A8A]">
+                        <span>By {article.author}</span>
+                        <span>•</span>
+                        <span>{article.readTime} min read</span>
+                        <span>•</span>
+                        <div className="flex items-center gap-1">
+                          <Eye size={12} />
+                          {article.views} views
+                        </div>
+                        <span>•</span>
+                        <span>Created: {new Date(article.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
+                      <button
+                        onClick={() => {
+                          setEditingArticle(article);
+                          setShowArticleModal(true);
+                        }}
+                        className="p-2 hover:bg-[#F2F2F2] rounded transition-colors"
+                        title="Edit article"
+                      >
+                        <Edit2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                      </button>
+                      <button
+                        onClick={() => deleteArticle(article._id)}
+                        className="p-2 hover:bg-red-50 text-red-600 rounded transition-colors"
+                        title="Delete article"
+                      >
+                        <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Contact Tab */}
         {activeTab === 'contact' && (
           <motion.div
@@ -643,6 +768,22 @@ export default function AdminDashboard() {
           }}
           onDelete={() => deleteMessage(selectedMessage._id)}
           getServiceName={getServiceName}
+        />
+      )}
+
+      {showArticleModal && (
+        <ArticleModal
+          article={editingArticle}
+          onClose={() => {
+            setShowArticleModal(false);
+            setEditingArticle(null);
+          }}
+          onSave={() => {
+            fetchData();
+            setShowArticleModal(false);
+            setEditingArticle(null);
+          }}
+          token={token}
         />
       )}
     </div>
@@ -928,6 +1069,240 @@ function MessageModal({ message, onClose, onDelete, getServiceName }) {
             Close
           </button>
         </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function ArticleModal({ article, onClose, onSave, token }) {
+  const [formData, setFormData] = useState(article || {
+    title: '',
+    description: '',
+    content: '',
+    author: '',
+    category: 'Financial Planning',
+    tags: [],
+    featuredImage: '',
+    isPublished: false,
+    readTime: 5
+  });
+
+  const [tagInput, setTagInput] = useState('');
+
+  const categories = [
+    'Financial Planning',
+    'Business Strategy',
+    'Tax & Compliance',
+    'Investment',
+    'Market Analysis',
+    'Industry Insights',
+    'Other'
+  ];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const url = article
+        ? `${API_URL}/api/articles/${article._id}`
+        : `${API_URL}/api/articles`;
+      
+      const response = await fetch(url, {
+        method: article ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        onSave();
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Error saving article');
+      }
+    } catch (err) {
+      alert('Error saving article');
+    }
+  };
+
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData({
+        ...formData,
+        tags: [...formData.tags, tagInput.trim()]
+      });
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setFormData({
+      ...formData,
+      tags: formData.tags.filter(tag => tag !== tagToRemove)
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 md:p-6 z-50">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-lg p-4 md:p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <h2 className="text-xl md:text-2xl mb-4 md:mb-6">{article ? 'Edit' : 'Add'} Article</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+            <div>
+              <label className="block text-sm mb-2">Title *</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2">Author *</label>
+              <input
+                type="text"
+                value={formData.author}
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2">Description *</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+              rows="3"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2">Content *</label>
+            <textarea
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+              rows="10"
+              required
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+            <div>
+              <label className="block text-sm mb-2">Category *</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+                required
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2">Read Time (minutes)</label>
+              <input
+                type="number"
+                value={formData.readTime}
+                onChange={(e) => setFormData({ ...formData, readTime: parseInt(e.target.value) })}
+                className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+                min="1"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2">Featured Image URL</label>
+            <input
+              type="url"
+              value={formData.featuredImage}
+              onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
+              className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2">Tags</label>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                className="flex-1 px-4 py-2 border rounded focus:outline-none focus:border-[#520052]"
+                placeholder="Add a tag and press Enter"
+              />
+              <button
+                type="button"
+                onClick={addTag}
+                className="px-4 py-2 bg-[#520052] text-white rounded hover:bg-[#6B006B]"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.isPublished}
+                onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
+              />
+              <span className="text-sm">Publish article</span>
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="submit"
+              className="flex-1 bg-[#520052] text-white py-2 rounded hover:bg-[#6B006B]"
+            >
+              {article ? 'Update' : 'Create'} Article
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 border border-[#E5E5E5] py-2 rounded hover:bg-[#F2F2F2]"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </motion.div>
     </div>
   );

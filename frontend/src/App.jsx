@@ -8,6 +8,8 @@ import ServicesPage from './pages/ServicesPage';
 import LearningCentrePage from './pages/LearningCentrePage';
 import InsightsPage from './pages/InsightsPage';
 import ContactPage from './pages/ContactPage';
+import SellBusinessPage from './pages/SellBusinessPage';
+import BuyBusinessPage from './pages/BuyBusinessPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 
@@ -27,6 +29,8 @@ export default function App() {
           <Route path="/learning-centre" element={<LearningCentrePage />} />
           <Route path="/insights" element={<InsightsPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/sell-business" element={<SellBusinessPage />} />
+          <Route path="/buy-business" element={<BuyBusinessPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
