@@ -8,6 +8,7 @@ import ServicesPage from './pages/ServicesPage';
 import LearningCentrePage from './pages/LearningCentrePage';
 import InsightsPage from './pages/InsightsPage';
 import ContactPage from './pages/ContactPage';
+import ArticleDetailPage from './pages/ArticleDetailPage';
 import SellBusinessPage from './pages/SellBusinessPage';
 import BuyBusinessPage from './pages/BuyBusinessPage';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/learning-centre" element={<LearningCentrePage />} />
+          <Route path="/article/:id" element={<ArticleDetailPage />} />
           <Route path="/insights" element={<InsightsPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/sell-business" element={<SellBusinessPage />} />

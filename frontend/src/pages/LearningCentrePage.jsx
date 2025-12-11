@@ -1,11 +1,13 @@
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FloatingCard } from '../components/FloatingCard';
 import { ExternalLink, Calendar, User, Tag, Eye } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function LearningCentrePage() {
+  const navigate = useNavigate();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -137,6 +139,7 @@ export default function LearningCentrePage() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: index * 0.1 }}
                   className="block"
+                  onClick={() => navigate(`/article/${article._id}`)}
                 >
                   <FloatingCard className="h-full group hover:shadow-xl transition-shadow cursor-pointer">
                     <div className="flex flex-col gap-4 h-full">
@@ -194,7 +197,9 @@ export default function LearningCentrePage() {
                         <span className="text-sm text-[#8A8A8A]">{article.readTime} min read</span>
                         <div className="flex items-center gap-2 text-[#520052] font-medium group-hover:gap-3 transition-all">
                           Read Article
-                          <ExternalLink size={16} />
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
                         </div>
                       </div>
                     </div>
