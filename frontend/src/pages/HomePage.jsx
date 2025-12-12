@@ -1,4 +1,4 @@
-import { color, motion } from "motion/react";
+import { motion } from "motion/react";
 import { ArrowRight, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FloatingCard } from "../components/FloatingCard";
@@ -32,7 +32,7 @@ export default function HomePage() {
       <>
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative pt-32 lg:pt-48 pb-24 lg:pb-32 overflow-hidden">
+      <section className="relative pt-32 lg:pt-40 pb-24 lg:pb-32 overflow-hidden min-h-screen flex items-center">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div
@@ -50,7 +50,7 @@ export default function HomePage() {
               </motion.div>
 
               <motion.h1
-                className="text-6xl lg:text-8xl xl:text-9xl tracking-tight mb-8 leading-[0.9]"
+                className="text-5xl lg:text-6xl xl:text-8xl tracking-tight mb-8 leading-[0.95]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.8 }} 
@@ -66,7 +66,8 @@ export default function HomePage() {
                 className="text-xl lg:text-2xl text-[#8A8A8A] mb-12 max-w-xl leading-relaxed"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.8 }}style={{color:"#520052"}}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                style={{color:"#520052"}}
               >
                 Elevating your business performance with expert financial guidance and support.
               </motion.p>

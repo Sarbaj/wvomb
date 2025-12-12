@@ -21,14 +21,13 @@ export default function ServiceDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [service, setService] = useState(null);
-  const [relatedServices, setRelatedServices] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [IconComponent, setIconComponent] = useState(null);
 
   useEffect(() => {
     fetchService();
-    fetchRelatedServices();
   }, [id]);
 
   useEffect(() => {
@@ -67,17 +66,7 @@ export default function ServiceDetailPage() {
     }
   };
 
-  const fetchRelatedServices = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/services`);
-      if (response.ok) {
-        const data = await response.json();
-        setRelatedServices(data.filter(s => s._id !== id).slice(0, 3));
-      }
-    } catch (error) {
-      console.error('Error fetching related services:', error);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -182,12 +171,6 @@ export default function ServiceDetailPage() {
                 >
                   Get Started Today
                 </Link>
-                <a
-                  href="tel:+1234567890"
-                  className="border border-[#520052] text-[#520052] px-8 py-4 rounded hover:bg-[#520052] hover:text-white transition-colors text-center"
-                >
-                  Call Now
-                </a>
               </div>
             </motion.div>
 
@@ -209,7 +192,7 @@ export default function ServiceDetailPage() {
       {/* Service Details */}
       <section className="py-20 bg-[#F2F2F2]">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-          <div className="grid lg:grid-cols-4 gap-12">
+          <div className="grid lg:grid-cols-3 gap-12">
             {/* Main Content */}
             <div className="lg:col-span-3">
               <motion.div
@@ -364,48 +347,7 @@ export default function ServiceDetailPage() {
         </div>
       </section>
 
-      {/* Related Services */}
-      {relatedServices.length > 0 && (
-        <section className="py-20">
-          <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-            >
-              <h2 className="text-4xl mb-12 text-center">
-                Related <span style={{color:"#520052"}}>Services</span>
-              </h2>
-              
-              <div className="grid md:grid-cols-3 gap-8">
-                {relatedServices.map((relatedService, index) => (
-                  <motion.div
-                    key={relatedService._id}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: index * 0.1 }}
-                  >
-                    <Link to={`/services/${relatedService._id}`}>
-                      <FloatingCard className="group cursor-pointer h-full hover:shadow-xl transition-all">
-                        <div className="text-4xl mb-4">{relatedService.icon || '⚡'}</div>
-                        <h3 className="text-xl font-medium mb-3 group-hover:text-[#520052] transition-colors">
-                          {relatedService.title}
-                        </h3>
-                        <p className="text-[#8A8A8A] mb-4">{relatedService.description}</p>
-                        <div className="text-[#520052] font-medium group-hover:underline">
-                          Learn More →
-                        </div>
-                      </FloatingCard>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
+
 
       {/* CTA Section */}
       <section className="py-20 bg-black text-white text-center">
