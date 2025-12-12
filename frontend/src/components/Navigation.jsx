@@ -1,17 +1,47 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Navigation() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [businessDropdownOpen, setBusinessDropdownOpen] = useState(false);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/services`);
+      if (response.ok) {
+        const data = await response.json();
+        setServices(data.slice(0, 6)); // Limit to 6 services for dropdown
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    }
+  };
 
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
-    { path: '/services', label: 'Services' },
+    { 
+      path: '/services', 
+      label: 'Services',
+      dropdown: services.length > 0 ? [
+        ...services.map(service => ({
+          path: `/services/${service._id}`,
+          label: service.title
+        })),
+        { path: '/services', label: 'View All Services', divider: true }
+      ] : null
+    },
     { 
       label: 'Business Sale/Purchase',
       dropdown: [
@@ -42,46 +72,74 @@ export default function Navigation() {
               <div
                 key={index}
                 className="relative"
-                onMouseEnter={() => setBusinessDropdownOpen(true)}
-                onMouseLeave={() => setBusinessDropdownOpen(false)}
+                onMouseEnter={() => {
+                  if (item.label === 'Business Sale/Purchase') {
+                    setBusinessDropdownOpen(true);
+                  } else if (item.label === 'Services') {
+                    setServicesDropdownOpen(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (item.label === 'Business Sale/Purchase') {
+                    setBusinessDropdownOpen(false);
+                  } else if (item.label === 'Services') {
+                    setServicesDropdownOpen(false);
+                  }
+                }}
               >
-                <button
+                <Link
+                  to={item.path || '#'}
                   className={`flex items-center gap-1 text-sm tracking-wide transition-colors ${
-                    location.pathname === '/sell-business' || location.pathname === '/buy-business'
+                    (item.label === 'Business Sale/Purchase' && (location.pathname === '/sell-business' || location.pathname === '/buy-business')) ||
+                    (item.label === 'Services' && location.pathname === '/services')
                       ? 'text-black'
                       : 'text-[#8A8A8A] hover:text-black'
                   }`}
                 >
                   {item.label}
-                  <ChevronDown size={16} className={`transition-transform ${businessDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
+                  <ChevronDown size={16} className={`transition-transform ${
+                    (item.label === 'Business Sale/Purchase' && businessDropdownOpen) ||
+                    (item.label === 'Services' && servicesDropdownOpen)
+                      ? 'rotate-180' : ''
+                  }`} />
+                </Link>
 
                 <AnimatePresence>
-                  {businessDropdownOpen && (
+                  {((item.label === 'Business Sale/Purchase' && businessDropdownOpen) ||
+                    (item.label === 'Services' && servicesDropdownOpen)) && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-2 bg-white border border-[#E5E5E5] rounded-lg shadow-lg py-2 min-w-[180px] z-50"
+                      className={`absolute top-full left-0 mt-2 bg-white border border-[#E5E5E5] rounded-lg shadow-lg py-2 z-50 ${
+                        item.label === 'Services' ? 'min-w-[220px]' : 'min-w-[180px]'
+                      }`}
                     >
-                      {item.dropdown.map((dropdownItem) => (
-                        <Link
-                          key={dropdownItem.path}
-                          to={dropdownItem.path}
-                          className={`block px-4 py-2 text-sm transition-colors ${
-                            location.pathname === dropdownItem.path
-                              ? 'text-black bg-[#F2F2F2]'
-                              : 'text-[#8A8A8A] hover:text-black hover:bg-[#F2F2F2]'
-                          }`}
-                        >
-                          {dropdownItem.label}
-                        </Link>
+                      {item.dropdown.map((dropdownItem, dropdownIndex) => (
+                        <div key={dropdownItem.path || dropdownIndex}>
+                          {dropdownItem.divider && (
+                            <div className="border-t border-[#E5E5E5] my-2" />
+                          )}
+                          <Link
+                            to={dropdownItem.path}
+                            className={`block px-4 py-2 text-sm transition-colors ${
+                              dropdownItem.divider 
+                                ? 'font-medium text-[#520052] hover:bg-[#F2F2F2]'
+                                : location.pathname === dropdownItem.path
+                                ? 'text-black bg-[#F2F2F2]'
+                                : 'text-[#8A8A8A] hover:text-black hover:bg-[#F2F2F2]'
+                            }`}
+                          >
+                            {dropdownItem.label}
+                          </Link>
+                        </div>
                       ))}
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {(location.pathname === '/sell-business' || location.pathname === '/buy-business') && (
+                {((item.label === 'Business Sale/Purchase' && (location.pathname === '/sell-business' || location.pathname === '/buy-business')) ||
+                  (item.label === 'Services' && location.pathname === '/services')) && (
                   <motion.div
                     layoutId="activeNav"
                     className="absolute -bottom-2 left-0 right-0 h-[2px] bg-black"

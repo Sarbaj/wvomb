@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { TrendingUp, BarChart3, Shield, FileText, DollarSign, Building2, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { TrendingUp, BarChart3, Shield, FileText, DollarSign, Building2, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { FloatingCard } from '../components/FloatingCard';
 import ImageWithFallback from '../components/figma/ImageWithFallback';
 
@@ -14,10 +15,24 @@ export default function ServicesPage() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedService, setExpandedService] = useState(null);
 
   useEffect(() => {
     fetchServices();
   }, []);
+
+  useEffect(() => {
+    // Handle scrolling to specific service from URL hash
+    const hash = window.location.hash.substring(1);
+    if (hash && services.length > 0) {
+      const element = document.getElementById(hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    }
+  }, [services]);
 
   const fetchServices = async () => {
     try {
@@ -172,32 +187,133 @@ export default function ServicesPage() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {displayServices.map((service, index) => {
               const IconComponent = service.icon;
+              const isExpanded = expandedService === service._id;
+              
               return (
                 <motion.div
                   key={service._id || service.title}
+                  id={service._id}
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-100px' }}
                   transition={{ duration: 0.8, delay: index * 0.1 }}
+                  className="h-full scroll-mt-32"
                 >
-                  <FloatingCard className="group cursor-pointer h-full flex flex-col">
+                  <FloatingCard className="group cursor-pointer h-full flex flex-col overflow-hidden">
                     <div className="flex flex-col gap-6 h-full">
                       <div className="w-16 h-16 bg-gradient-to-br from-[#C96AE0] via-[#520052] to-[#1A001A] flex items-center justify-center text-white shadow-[0_10px_30px_rgba(0,0,0,0.4)] group-hover:scale-110 transition-transform">
                         <IconComponent size={28} />
                       </div>
 
                       <div className="flex-1 flex flex-col">
-                        <h3 className="text-2xl lg:text-3xl mb-3 tracking-tight" style={{color:"#520052"}}>{service.title}</h3>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-2xl lg:text-3xl tracking-tight" style={{color:"#520052"}}>{service.title}</h3>
+                          <button
+                            onClick={() => setExpandedService(isExpanded ? null : service._id)}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp size={20} className="text-[#520052]" />
+                            ) : (
+                              <ChevronDown size={20} className="text-[#520052]" />
+                            )}
+                          </button>
+                        </div>
+                        
                         <p className="text-lg text-[#8A8A8A] mb-4 leading-relaxed">{service.description}</p>
 
-                        {service.features && service.features.length > 0 && (
-                          <div className="grid grid-cols-2 gap-3 mt-auto">
-                            {service.features.map((feature) => (
-                              <div key={feature} className="flex items-center gap-2 text-[#8A8A8A]">
-                                <span className="w-2 h-2 bg-black rounded-full" />
-                                {feature}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="border-t border-gray-200 pt-4 mb-4">
+                                <h4 className="text-lg font-medium mb-3" style={{color:"#520052"}}>Key Benefits:</h4>
+                                <ul className="space-y-2 text-[#8A8A8A]">
+                                  <li className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#520052] rounded-full mt-2 flex-shrink-0" />
+                                    Expert guidance tailored to your business needs
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#520052] rounded-full mt-2 flex-shrink-0" />
+                                    Compliance with latest regulations and standards
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#520052] rounded-full mt-2 flex-shrink-0" />
+                                    Cost-effective solutions for growing businesses
+                                  </li>
+                                  <li className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 bg-[#520052] rounded-full mt-2 flex-shrink-0" />
+                                    Ongoing support and consultation
+                                  </li>
+                                </ul>
                               </div>
-                            ))}
+
+                              <div className="border-t border-gray-200 pt-4">
+                                <h4 className="text-lg font-medium mb-3" style={{color:"#520052"}}>What's Included:</h4>
+                                <div className="grid grid-cols-1 gap-2">
+                                  <div className="flex items-center gap-2 text-[#8A8A8A]">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full" />
+                                    Initial consultation and assessment
+                                  </div>
+                                  <div className="flex items-center gap-2 text-[#8A8A8A]">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full" />
+                                    Customized implementation plan
+                                  </div>
+                                  <div className="flex items-center gap-2 text-[#8A8A8A]">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full" />
+                                    Regular progress reviews
+                                  </div>
+                                  <div className="flex items-center gap-2 text-[#8A8A8A]">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full" />
+                                    Documentation and reporting
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                                <Link 
+                                  to={`/services/${service._id}`}
+                                  className="inline-flex items-center gap-2 bg-[#520052] text-white px-4 py-2 rounded hover:bg-[#6B0066] transition-colors text-sm"
+                                >
+                                  Learn More
+                                  <TrendingUp size={16} />
+                                </Link>
+                                <Link 
+                                  to="/contact" 
+                                  className="inline-flex items-center gap-2 border border-[#520052] text-[#520052] px-4 py-2 rounded hover:bg-[#520052] hover:text-white transition-colors text-sm"
+                                >
+                                  Get Started
+                                </Link>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {!isExpanded && (
+                          <div className="mt-auto">
+                            {service.features && service.features.length > 0 && (
+                              <div className="grid grid-cols-2 gap-3 mb-4">
+                                {service.features.slice(0, 4).map((feature) => (
+                                  <div key={feature} className="flex items-center gap-2 text-[#8A8A8A]">
+                                    <span className="w-2 h-2 bg-black rounded-full" />
+                                    <span className="text-sm">{feature}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <Link 
+                              to={`/services/${service._id}`}
+                              className="inline-flex items-center gap-2 text-[#520052] hover:text-[#6B0066] transition-colors text-sm font-medium"
+                            >
+                              View Details
+                              <TrendingUp size={16} />
+                            </Link>
                           </div>
                         )}
                       </div>

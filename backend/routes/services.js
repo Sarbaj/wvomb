@@ -24,15 +24,18 @@ router.get('/all', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Get single service
+// Get single service (public - but only active services)
 router.get('/:id', async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const service = await Service.findOne({ _id: req.params.id, isActive: true });
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
     }
     res.json(service);
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(404).json({ message: 'Service not found' });
+    }
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
