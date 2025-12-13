@@ -1,9 +1,48 @@
 import nodemailer from 'nodemailer';
 
+// Check if we're in production (Render) environment
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER;
+
 // Create Zoho SMTP transporter with multiple fallback options
 const createTransporter = () => {
-  // Try multiple configurations
+  // Try multiple configurations with fallbacks for cloud hosting
   const configs = [
+    // Try Zoho TLS first (more likely to work on cloud platforms)
+    {
+      name: 'Zoho Workplace TLS (587)',
+      host: 'smtppro.zoho.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.ZOHO_SMTP_USER,
+        pass: process.env.ZOHO_SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000,   // 30 seconds
+      socketTimeout: 60000      // 60 seconds
+    },
+    // Fallback to Gmail if Zoho fails
+    {
+      name: 'Gmail SMTP Fallback',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.GMAIL_SMTP_USER || process.env.ZOHO_SMTP_USER,
+        pass: process.env.GMAIL_SMTP_PASS || process.env.ZOHO_SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 60000,
+      greetingTimeout: 30000,
+      socketTimeout: 60000
+    },
+    // Original Zoho SSL as last resort
     {
       name: 'Zoho Workplace SSL (465)',
       host: 'smtppro.zoho.com',
@@ -15,37 +54,14 @@ const createTransporter = () => {
       },
       tls: {
         rejectUnauthorized: false
-      }
-    },
-    {
-      name: 'Zoho Workplace TLS (587)',
-      host: 'smtppro.zoho.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.ZOHO_SMTP_USER,
-        pass: process.env.ZOHO_SMTP_PASS,
       },
-      tls: {
-        rejectUnauthorized: false
-      }
-    },
-    {
-      name: 'Zoho Mail TLS (587)',
-      host: 'smtp.zoho.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.ZOHO_SMTP_USER,
-        pass: process.env.ZOHO_SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
+      connectionTimeout: 60000,
+      greetingTimeout: 30000,
+      socketTimeout: 60000
     }
   ];
   
-  // Use the first config (SSL 465) as shown in your Zoho settings
+  // Use TLS configuration first (better for cloud hosting)
   const config = configs[0];
   
   console.log('📧 Trying Zoho SMTP config:', {
@@ -60,13 +76,14 @@ const createTransporter = () => {
   return nodemailer.createTransport(config);
 };
 
-// Send email function using Zoho SMTP
+// Send email function with production fallbacks
 export const sendEmail = async ({ to, subject, html }) => {
   try {
     console.log('📧 Attempting to send email to:', to);
+    console.log('🌍 Environment:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
     
     if (!process.env.ZOHO_SMTP_USER || !process.env.ZOHO_SMTP_PASS) {
-      console.log('⚠️ Zoho SMTP credentials not configured - email not sent');
+      console.log('⚠️ SMTP credentials not configured - email not sent');
       return null;
     }
 

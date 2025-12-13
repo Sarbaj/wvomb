@@ -22,10 +22,23 @@ const getServiceName = (serviceValue) => {
 
 // Submit contact form (public)
 router.post('/', async (req, res) => {
+  const timestamp = new Date().toISOString();
+  const requestId = Math.random().toString(36).substring(7);
+  
   try {
     const { name, email, company, service, message } = req.body;
+    
+    console.log(`\n🔥 [${timestamp}] [${requestId}] NEW CONTACT FORM SUBMISSION`);
+    console.log(`📝 Name: ${name}`);
+    console.log(`📧 Email: ${email}`);
+    console.log(`🏢 Company: ${company || 'Not provided'}`);
+    console.log(`🎯 Service: ${service}`);
+    console.log(`💬 Message: ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`);
+    console.log(`🌐 IP: ${req.ip || req.connection.remoteAddress}`);
+    console.log(`🔧 User-Agent: ${req.get('User-Agent')}`);
 
     // Create message in database
+    console.log(`💾 [${requestId}] Saving message to database...`);
     const newMessage = new Message({
       name,
       email,
@@ -35,41 +48,54 @@ router.post('/', async (req, res) => {
     });
 
     await newMessage.save();
+    console.log(`✅ [${requestId}] Message saved to database with ID: ${newMessage._id}`);
 
     // Send email notification to admin (only if Zoho SMTP is configured)
     if (process.env.ZOHO_SMTP_USER && process.env.ZOHO_SMTP_PASS) {
+      console.log(`📧 [${requestId}] SMTP credentials found - initiating email process`);
+      console.log(`📧 [${requestId}] SMTP User: ${process.env.ZOHO_SMTP_USER}`);
+      console.log(`📧 [${requestId}] Admin Email: ${process.env.ADMIN_EMAIL}`);
+      
       // Send emails asynchronously to avoid blocking the response
       setImmediate(async () => {
         try {
-          console.log('📧 Starting email sending process...');
+          console.log(`📧 [${requestId}] Starting background email sending process...`);
           const serviceName = getServiceName(service);
+          console.log(`🎯 [${requestId}] Service mapped to: ${serviceName}`);
           
           // Send admin notification
+          console.log(`📤 [${requestId}] Sending admin notification email...`);
           await sendEmail({
             to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
             subject: `🔔 New Contact Form Submission from ${name}`,
             html: generateEmailTemplate(name, email, company, serviceName, message)
           });
-          console.log('✅ Admin notification sent');
+          console.log(`✅ [${requestId}] Admin notification sent successfully`);
 
           // Send auto-reply to user
+          console.log(`📤 [${requestId}] Sending auto-reply to user: ${email}`);
           await sendAutoReply(email, name);
-          console.log('✅ Auto-reply sent');
+          console.log(`✅ [${requestId}] Auto-reply sent successfully`);
 
           // Mark email as sent
+          console.log(`💾 [${requestId}] Updating database - marking emails as sent...`);
           newMessage.emailSent = true;
           await newMessage.save();
+          console.log(`✅ [${requestId}] Database updated successfully`);
           
-          console.log('✅ All emails sent successfully');
+          console.log(`🎉 [${requestId}] ALL EMAILS SENT SUCCESSFULLY! Process complete.`);
         } catch (emailError) {
-          console.error('⚠️ Email sending failed (message saved to database):', emailError.message);
-          console.error('Full error:', emailError);
+          console.error(`❌ [${requestId}] EMAIL SENDING FAILED:`, emailError.message);
+          console.error(`❌ [${requestId}] Full error details:`, emailError);
+          console.error(`❌ [${requestId}] Stack trace:`, emailError.stack);
         }
       });
       
-      console.log('📧 Email sending initiated in background');
+      console.log(`🚀 [${requestId}] Email sending initiated in background - continuing with response`);
     } else {
-      console.log('ℹ️ Zoho SMTP not configured - message saved to database only');
+      console.log(`⚠️ [${requestId}] Zoho SMTP not configured - message saved to database only`);
+      console.log(`⚠️ [${requestId}] ZOHO_SMTP_USER: ${process.env.ZOHO_SMTP_USER ? 'SET' : 'NOT SET'}`);
+      console.log(`⚠️ [${requestId}] ZOHO_SMTP_PASS: ${process.env.ZOHO_SMTP_PASS ? 'SET' : 'NOT SET'}`);
     }
 
     res.status(201).json({ 
