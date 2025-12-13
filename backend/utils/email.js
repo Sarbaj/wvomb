@@ -1,19 +1,63 @@
 import nodemailer from 'nodemailer';
 
-// Create Zoho SMTP transporter
+// Create Zoho SMTP transporter with multiple fallback options
 const createTransporter = () => {
-  return nodemailer.createTransporter({
-    host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.com',
-    port: process.env.ZOHO_SMTP_PORT || 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.ZOHO_SMTP_USER,
-      pass: process.env.ZOHO_SMTP_PASS,
+  // Try multiple configurations
+  const configs = [
+    {
+      name: 'Zoho Workplace SSL (465)',
+      host: 'smtppro.zoho.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.ZOHO_SMTP_USER,
+        pass: process.env.ZOHO_SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
     },
-    tls: {
-      rejectUnauthorized: false
+    {
+      name: 'Zoho Workplace TLS (587)',
+      host: 'smtppro.zoho.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.ZOHO_SMTP_USER,
+        pass: process.env.ZOHO_SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    },
+    {
+      name: 'Zoho Mail TLS (587)',
+      host: 'smtp.zoho.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.ZOHO_SMTP_USER,
+        pass: process.env.ZOHO_SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
     }
+  ];
+  
+  // Use the first config (SSL 465) as shown in your Zoho settings
+  const config = configs[0];
+  
+  console.log('📧 Trying Zoho SMTP config:', {
+    name: config.name,
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    user: config.auth.user,
+    passLength: config.auth.pass ? config.auth.pass.length : 0
   });
+  
+  return nodemailer.createTransport(config);
 };
 
 // Send email function using Zoho SMTP
