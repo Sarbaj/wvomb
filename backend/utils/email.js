@@ -5,64 +5,33 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER
 
 // Create Zoho SMTP transporter with multiple fallback options
 const createTransporter = () => {
-  // Try multiple configurations with fallbacks for cloud hosting
-  const configs = [
-    // Try Zoho TLS first (more likely to work on cloud platforms)
-    {
-      name: 'Zoho Workplace TLS (587)',
-      host: 'smtppro.zoho.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.ZOHO_SMTP_USER,
-        pass: process.env.ZOHO_SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-      },
-      connectionTimeout: 60000, // 60 seconds
-      greetingTimeout: 30000,   // 30 seconds
-      socketTimeout: 60000      // 60 seconds
-    },
-    // Fallback to Gmail if Zoho fails
-    {
-      name: 'Gmail SMTP Fallback',
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.GMAIL_SMTP_USER || process.env.ZOHO_SMTP_USER,
-        pass: process.env.GMAIL_SMTP_PASS || process.env.ZOHO_SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 60000,
-      greetingTimeout: 30000,
-      socketTimeout: 60000
-    },
-    // Original Zoho SSL as last resort
-    {
-      name: 'Zoho Workplace SSL (465)',
-      host: 'smtppro.zoho.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.ZOHO_SMTP_USER,
-        pass: process.env.ZOHO_SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 60000,
-      greetingTimeout: 30000,
-      socketTimeout: 60000
-    }
-  ];
+  // Zoho Workplace (Paid) Configuration
+  const port = parseInt(process.env.ZOHO_SMTP_PORT) || 465;
+  const host = process.env.ZOHO_SMTP_HOST || 'smtppro.zoho.com';
   
-  // Use TLS configuration first (better for cloud hosting)
-  const config = configs[0];
+  const config = {
+    name: `Zoho Workplace ${port === 465 ? 'SSL' : 'TLS'} (${port})`,
+    host: host,
+    port: port,
+    secure: port === 465, // SSL for 465, TLS for 587
+    auth: {
+      user: process.env.ZOHO_SMTP_USER,
+      pass: process.env.ZOHO_SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
+      servername: host
+    },
+    // Optimized timeouts for Zoho Workplace
+    connectionTimeout: 20000, // 20 seconds
+    greetingTimeout: 10000,   // 10 seconds  
+    socketTimeout: 20000,     // 20 seconds
+    // Additional Zoho-specific options
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    rateLimit: 14 // messages per second
+  };
   
   console.log('📧 Trying Zoho SMTP config:', {
     name: config.name,
