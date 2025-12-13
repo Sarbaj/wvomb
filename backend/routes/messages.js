@@ -38,27 +38,36 @@ router.post('/', async (req, res) => {
 
     // Send email notification to admin (only if Zoho SMTP is configured)
     if (process.env.ZOHO_SMTP_USER && process.env.ZOHO_SMTP_PASS) {
-      try {
-        const serviceName = getServiceName(service);
-        
-        await sendEmail({
-          to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
-          subject: `🔔 New Contact Form Submission from ${name}`,
-          html: generateEmailTemplate(name, email, company, serviceName, message)
-        });
+      // Send emails asynchronously to avoid blocking the response
+      setImmediate(async () => {
+        try {
+          console.log('📧 Starting email sending process...');
+          const serviceName = getServiceName(service);
+          
+          // Send admin notification
+          await sendEmail({
+            to: process.env.ADMIN_EMAIL || 'aashish.pande@wvomb.co',
+            subject: `🔔 New Contact Form Submission from ${name}`,
+            html: generateEmailTemplate(name, email, company, serviceName, message)
+          });
+          console.log('✅ Admin notification sent');
 
-        // Send auto-reply to user
-        await sendAutoReply(email, name);
+          // Send auto-reply to user
+          await sendAutoReply(email, name);
+          console.log('✅ Auto-reply sent');
 
-        // Mark email as sent
-        newMessage.emailSent = true;
-        await newMessage.save();
-        
-        console.log('✅ Emails sent successfully');
-      } catch (emailError) {
-        console.error('⚠️ Email sending failed (message saved to database):', emailError.message);
-        // Continue even if email fails - message is still saved
-      }
+          // Mark email as sent
+          newMessage.emailSent = true;
+          await newMessage.save();
+          
+          console.log('✅ All emails sent successfully');
+        } catch (emailError) {
+          console.error('⚠️ Email sending failed (message saved to database):', emailError.message);
+          console.error('Full error:', emailError);
+        }
+      });
+      
+      console.log('📧 Email sending initiated in background');
     } else {
       console.log('ℹ️ Zoho SMTP not configured - message saved to database only');
     }

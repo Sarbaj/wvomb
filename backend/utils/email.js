@@ -63,11 +63,14 @@ const createTransporter = () => {
 // Send email function using Zoho SMTP
 export const sendEmail = async ({ to, subject, html }) => {
   try {
+    console.log('📧 Attempting to send email to:', to);
+    
     if (!process.env.ZOHO_SMTP_USER || !process.env.ZOHO_SMTP_PASS) {
       console.log('⚠️ Zoho SMTP credentials not configured - email not sent');
       return null;
     }
 
+    console.log('📧 Creating transporter...');
     const transporter = createTransporter();
     
     const mailOptions = {
@@ -80,11 +83,18 @@ export const sendEmail = async ({ to, subject, html }) => {
       html: html
     };
 
+    console.log('📧 Sending email with options:', {
+      from: mailOptions.from.address,
+      to: mailOptions.to,
+      subject: mailOptions.subject
+    });
+
     const result = await transporter.sendMail(mailOptions);
     console.log('✅ Email sent via Zoho SMTP:', result.messageId);
     return result;
   } catch (error) {
     console.error('❌ Zoho SMTP error:', error.message);
+    console.error('❌ Full error details:', error);
     throw error;
   }
 };
