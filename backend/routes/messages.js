@@ -36,8 +36,8 @@ router.post('/', async (req, res) => {
 
     await newMessage.save();
 
-    // Send email notification to admin (only if Brevo API is configured)
-    if (process.env.BREVO_API_KEY) {
+    // Send email notification to admin (only if Zoho SMTP is configured)
+    if (process.env.ZOHO_SMTP_USER && process.env.ZOHO_SMTP_PASS) {
       try {
         const serviceName = getServiceName(service);
         
@@ -60,7 +60,7 @@ router.post('/', async (req, res) => {
         // Continue even if email fails - message is still saved
       }
     } else {
-      console.log('ℹ️ Brevo API not configured - message saved to database only');
+      console.log('ℹ️ Zoho SMTP not configured - message saved to database only');
     }
 
     res.status(201).json({ 

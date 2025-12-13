@@ -40,7 +40,7 @@ router.post('/sell', async (req, res) => {
     await businessSale.save();
 
     // Send notification email
-    if (process.env.BREVO_API_KEY) {
+    if (process.env.ZOHO_SMTP_USER && process.env.ZOHO_SMTP_PASS) {
       try {
         const emailContent = `
           <!DOCTYPE html>
@@ -180,7 +180,7 @@ router.post('/buy', async (req, res) => {
     await businessBuy.save();
 
     // Send notification email
-    if (process.env.BREVO_API_KEY) {
+    if (process.env.ZOHO_SMTP_USER && process.env.ZOHO_SMTP_PASS) {
       try {
         const emailContent = `
           <!DOCTYPE html>

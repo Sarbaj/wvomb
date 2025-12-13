@@ -1,38 +1,46 @@
-import * as brevo from '@getbrevo/brevo';
+import nodemailer from 'nodemailer';
 
-// Initialize Brevo API client
-const getBrevoClient = () => {
-  const apiInstance = new brevo.TransactionalEmailsApi();
-  const apiKey = apiInstance.authentications['apiKey'];
-  apiKey.apiKey = process.env.BREVO_API_KEY;
-  return apiInstance;
+// Create Zoho SMTP transporter
+const createTransporter = () => {
+  return nodemailer.createTransporter({
+    host: process.env.ZOHO_SMTP_HOST || 'smtp.zoho.com',
+    port: process.env.ZOHO_SMTP_PORT || 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.ZOHO_SMTP_USER,
+      pass: process.env.ZOHO_SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
 };
 
-// Send email function using Brevo API
+// Send email function using Zoho SMTP
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    if (!process.env.BREVO_API_KEY) {
-      console.log('⚠️ BREVO_API_KEY not configured - email not sent');
+    if (!process.env.ZOHO_SMTP_USER || !process.env.ZOHO_SMTP_PASS) {
+      console.log('⚠️ Zoho SMTP credentials not configured - email not sent');
       return null;
     }
 
-    const apiInstance = getBrevoClient();
+    const transporter = createTransporter();
     
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      name: 'WVOMB Advisors',
-      email: process.env.ADMIN_EMAIL || 'sarbajmalek3456@gmail.com'
+    const mailOptions = {
+      from: {
+        name: 'WVOMB Advisors',
+        address: process.env.ZOHO_SMTP_USER
+      },
+      to: to,
+      subject: subject,
+      html: html
     };
-    sendSmtpEmail.to = [{ email: to }];
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = html;
 
-    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    const messageId = result?.response?.body?.messageId || result?.messageId || 'unknown';
-    console.log('✅ Email sent via Brevo API:', messageId);
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent via Zoho SMTP:', result.messageId);
     return result;
   } catch (error) {
-    console.error('❌ Brevo API error:', error.message);
+    console.error('❌ Zoho SMTP error:', error.message);
     throw error;
   }
 };
@@ -308,28 +316,28 @@ const generateAutoReplyTemplate = (userName) => {
   `;
 };
 
-// Send auto-reply to user using Brevo API
+// Send auto-reply to user using Zoho SMTP
 export const sendAutoReply = async (userEmail, userName) => {
   try {
-    if (!process.env.BREVO_API_KEY) {
-      console.log('⚠️ BREVO_API_KEY not configured - auto-reply not sent');
+    if (!process.env.ZOHO_SMTP_USER || !process.env.ZOHO_SMTP_PASS) {
+      console.log('⚠️ Zoho SMTP credentials not configured - auto-reply not sent');
       return null;
     }
 
-    const apiInstance = getBrevoClient();
+    const transporter = createTransporter();
     
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      name: 'WVOMB Advisors',
-      email: process.env.ADMIN_EMAIL || 'sarbajmalek3456@gmail.com'
+    const mailOptions = {
+      from: {
+        name: 'WVOMB Advisors',
+        address: process.env.ZOHO_SMTP_USER
+      },
+      to: userEmail,
+      subject: 'Thank you for contacting WVOMB Advisors ✓',
+      html: generateAutoReplyTemplate(userName)
     };
-    sendSmtpEmail.to = [{ email: userEmail }];
-    sendSmtpEmail.subject = 'Thank you for contacting WVOMB Advisors ✓';
-    sendSmtpEmail.htmlContent = generateAutoReplyTemplate(userName);
 
-    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    const messageId = result?.response?.body?.messageId || result?.messageId || 'unknown';
-    console.log('✅ Auto-reply sent to:', userEmail, '- Message ID:', messageId);
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Auto-reply sent to:', userEmail, '- Message ID:', result.messageId);
   } catch (error) {
     console.error('❌ Auto-reply error:', error.message);
     // Don't throw - auto-reply failure shouldn't stop the process
